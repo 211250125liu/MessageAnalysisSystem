@@ -1,24 +1,40 @@
-<script setup lang="ts">
-import Aside from './views/menu/index.vue'
-import Header from './views/header/index.vue'
-</script>
-
-
 <template>
-    <el-container style="width: 100vw;height: 100vh">
-        <el-aside style="width: fit-content" >
-            <Aside/>
+    <el-container style="height: 100vh;">
+        <!-- 左侧菜单栏 -->
+        <el-aside width="250px" style="background-color: #f4f4f4;">
+            <Menu />
         </el-aside>
-        <el-container>
-            <el-header>
-                <Header/>
-            </el-header>
-            <el-main style="background-color: #535bf2">Main</el-main>
-        </el-container>
+
+        <!-- 右侧内容区 -->
+        <el-main>
+            <router-view />
+        </el-main>
     </el-container>
 </template>
 
+<script>
+import Menu from './components/Menu.vue'
 
-<style scoped>
+export default {
+    name: 'App',
+    components: {
+        Menu
+    }
+}
+</script>
 
+<style>
+#app {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+}
+
+.el-main {
+    padding: 20px;
+    background-color: #fff;
+}
+
+.el-aside {
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
 </style>
