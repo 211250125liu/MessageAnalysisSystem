@@ -1,17 +1,16 @@
 <template>
     <el-menu default-active="/" class="el-menu-vertical-demo" background-color="#f4f4f4" router>
-        <!-- 使用 to 来进行路由跳转 -->
+        <el-menu-item index="/dataSearch">
+            <i class="el-icon-phone"></i>
+            <span>数据查询</span>
+        </el-menu-item>
         <el-menu-item index="/">
             <i class="el-icon-house"></i>
-            <span>Home</span>
+            <span>数据统计</span>
         </el-menu-item>
         <el-menu-item index="/about" >
             <i class="el-icon-info"></i>
-            <span>About</span>
-        </el-menu-item>
-        <el-menu-item index="/contact">
-            <i class="el-icon-phone"></i>
-            <span>Contact</span>
+            <span>数据分析</span>
         </el-menu-item>
     </el-menu>
 </template>

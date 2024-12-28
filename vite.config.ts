@@ -20,7 +20,7 @@ export default defineConfig({
   server:{
     proxy: {
       '/api': {
-        target: 'http://localhost:8080', //本地的地址
+        target: 'http://172.29.7.168:65348', //本地的地址
         changeOrigin: true, // 是否改变请求源地址
         rewrite: (path) => path.replace(/^\/api/, '') // 将 /api 替换为空字符串
       }
