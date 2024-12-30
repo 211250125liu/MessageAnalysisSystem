@@ -23,7 +23,7 @@ request.interceptors.request.use(config => {
 // 可以在接口响应后统一处理结果
 request.interceptors.response.use(
     response => {
-        let res = response.data;
+        let res = response.data.result;
         // 如果是返回的文件
         if (response.config.responseType === 'blob') {
             return res

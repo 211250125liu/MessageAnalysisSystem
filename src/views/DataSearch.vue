@@ -1,9 +1,50 @@
 <template>
+    <el-row :gutter="20">
+        <el-col :span="4">
+            <el-input
+                v-model="filters.sourceIp"
+                placeholder="输入源 IP"
+                prefix-icon="el-icon-search"
+                clearable
+            />
+        </el-col>
+        <el-col :span="4">
+            <el-input
+                v-model="filters.destIp"
+                placeholder="输入目的 IP"
+                prefix-icon="el-icon-search"
+                clearable
+            />
+        </el-col>
+        <el-col :span="4">
+            <el-input
+                v-model="filters.sourceMac"
+                placeholder="输入源 MAC 地址"
+                prefix-icon="el-icon-search"
+                clearable
+            />
+        </el-col>
+        <el-col :span="4">
+            <el-input
+                v-model="filters.destMac"
+                placeholder="输入目的 MAC 地址"
+                prefix-icon="el-icon-search"
+                clearable
+            />
+        </el-col>
+        <el-col :span="6" class="mt-4">
+            <el-button type="primary" @click="getData">筛选</el-button>
+            <el-button @click="resetFilter">重置筛选</el-button>
+        </el-col>
+    </el-row>
+
     <el-table :data="formattedData" stripe style="width: 100%">
-        <el-table-column prop="No" label="No" width="60" />
-        <el-table-column prop="time" label="Time" width="230" />
-        <el-table-column prop="srcIp" label="Source" width="180" />
-        <el-table-column prop="dstIp" label="Destination" width="180" />
+        <el-table-column prop="No" label="No" width="80" />
+        <el-table-column prop="time" label="Time" width="250" />
+        <el-table-column prop="srcIp" label="SrcIp" width="180" />
+        <el-table-column prop="dstIp" label="DstIp" width="180" />
+        <el-table-column prop="srcMAC" label="SrcMAC" width="180" />
+        <el-table-column prop="dstMAC" label="DstMAC" width="180" />
         <el-table-column prop="protocol" label="Protocol" width="100" />
         <el-table-column prop="length" label="Length" width="80" />
         <el-table-column prop="information" label="Info" width="180" />
@@ -24,9 +65,8 @@
 </template>
 
 <script lang="ts" setup>
-import {onBeforeMount, ref} from 'vue'
-import {computed} from "vue";
-import {getMessage } from "../api/messageApi.ts"
+import {computed, onBeforeMount, ref} from 'vue'
+import {getMessage, getMessageLen} from "../api/messageApi.ts"
 
 const currentPage = ref(1)
 const pageSize = ref(10)
@@ -35,6 +75,14 @@ const disabled = ref(false)
 const total = ref(0)
 const list = ref([])
 
+const filters = ref({
+    sourceIp: '',
+    destIp: '',
+    sourceMac: '',
+    destMac: ''
+});
+
+
 //数据格式化
 const formattedData = computed(() => {
     return list.value.map((data) => ({
@@ -42,6 +90,8 @@ const formattedData = computed(() => {
         time: data.message.time, // 提取 message.time
         srcIp: data.message.srcIp, // 提取 message.srcIp
         dstIp: data.message.dstIp, // 提取 message.dstIp
+        srcMAC: data.messageDetail.ethernet.src,
+        dstMAC: data.messageDetail.ethernet.dst,
         protocol: data.message.protocol, // 提取 message.protocol
         length: data.message.length, // 提取 message.length
         information: data.information // 提取 information
@@ -54,11 +104,19 @@ onBeforeMount(()=>{
 
 let getData = async () =>{
     let data  = await getMessage(currentPage.value,pageSize.value)
-    total.value = data.total
+    total.value = await getMessageLen()
     list.value = data.list
     console.log(total.value)
     console.log(list.value)
 }
+// 重置筛选
+const resetFilter = () => {
+    filters.value.sourceIp = '';
+    filters.value.destIp = '';
+    filters.value.sourceMac = '';
+    filters.value.destMac = '';
+};
+
 const handleSizeChange = () => {
     getData()
 }
