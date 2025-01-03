@@ -38,7 +38,8 @@
         </el-col>
     </el-row>
 
-    <el-table :data="formattedData" stripe style="width: 100%">
+    <el-table :data="formattedData" stripe style="width: 100%"
+              @row-click="handleRowClick" >
         <el-table-column prop="No" label="No" width="80" />
         <el-table-column prop="time" label="Time" width="250" />
         <el-table-column prop="srcIp" label="SrcIp" width="180" />
@@ -62,6 +63,15 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
     />
+    <div v-if="showData" style="display: flex">
+        <span> rawData </span>
+        <div style="width: 30rem;height: 15rem;white-space: pre-line; margin:0 2rem;letter-spacing:0.1em;text-align: start " >
+            {{rawData}}
+        </div>
+        <div  style="width: 20rem;height: 15rem;white-space: pre-line;letter-spacing:0.2rem" >
+            {{rawAsciiData}}
+        </div>
+    </div>
 </template>
 
 <script lang="ts" setup>
@@ -74,6 +84,54 @@ const background = ref(false)
 const disabled = ref(false)
 const total = ref(0)
 const list = ref([])
+const showData = ref(false)
+const rawData = ref("")
+const rawAsciiData = ref(null)
+
+const handleRowClick = (row: any) => {
+    for(let item of list.value){
+        if(row.messageId === item.messageId){
+            rawData.value = item.rawData
+            showData.value = true
+            break
+        }
+    }
+    //转换为可读字符串
+    const hexArray = rawData.value.match(/.{2}/g) || [];  // 每两个字符为一组，转为数组
+
+    // 将16进制码和对应的字符一起组合起来
+    const formattedHex = hexArray.map(hex => {
+        const code = parseInt(hex, 16);
+        // 如果字符是可打印字符，则返回对应字符；否则返回 "."
+        return (code >= 32 && code <= 126) ? String.fromCharCode(code) : '.';
+    });
+    // 每行 16 个字符, 每 8 个字符之间插入两个空格
+    const rows = [];
+    for (let i = 0; i < formattedHex.length; i += 16) {
+        const line = formattedHex.slice(i, i + 16);
+        const spacedLine = line.slice(0, 8).join(' ') + '  ' + line.slice(8).join(' '); // 每 8 个字符之间加两个空格
+        rows.push(spacedLine);
+    }
+    rawAsciiData.value = rows.join('\n');
+    console.log(rawAsciiData.value)
+
+    // 两个之间加一个空格
+    rawData.value = rawData.value.match(/.{1,2}/g).join(' ');
+    console.log(rawData.value)
+    // 2. 每16个字符后添加两个空格
+    let chunks16 = rawData.value.match(/.{1,48}/g).map(chunk => {
+        // 在每16个字符之间添加两个空格
+        return chunk.slice(0, 23) + '  ' + chunk.slice(23);
+    });
+    console.log(chunks16)
+
+    // 3. 每32个字符后换行
+    rawData.value = chunks16.join('\n');
+    console.log("rawData")
+    console.log(rawData.value)
+
+      // 每行之间换行
+}
 
 const filters = ref({
     sourceIp: '',
@@ -106,8 +164,8 @@ let getData = async () =>{
     let data  = await getMessage(currentPage.value,pageSize.value)
     total.value = await getMessageLen()
     list.value = data.list
-    console.log(total.value)
-    console.log(list.value)
+    // console.log(total.value)
+    // console.log(list.value)
 }
 // 重置筛选
 const resetFilter = () => {
