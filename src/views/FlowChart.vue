@@ -58,7 +58,6 @@ onMounted(() => {
     nextTick(() => { // 确保 DOM 完全加载
         if (chartDom.value) {
             myChart = echarts.init(chartDom.value);
-            myChart.setOption(getChartOption([])); // 初始化图表
         }
     });
 });
@@ -79,13 +78,73 @@ const search = async () => {
 // 更新图表
 const updateChart = (flowData: any) => {
     if (myChart) {
-        const option = getChartOption(flowData);
+        let positionData = getPosition(flowData)
+        positionData.unshift({
+            name: ip.value,
+            x : 0,
+            y : 0
+        })
+        let link = []
+        if(isSource.value){
+            for(let i = 1;i < positionData.length;i++){
+                link.push({
+                    source: 0,
+                    target: i,
+                    label: {
+                        show : true,
+                        formatter: "connectCnt : " + flowData[i-1].connectCnt + "\n" + "traffic : " + flowData[i-1].traffic
+                    },
+                })
+            }
+        }
+        else{
+            for(let i = 1;i < positionData.length;i++){
+                link.push({
+                    source: i,
+                    target: 0,
+                    label: {
+                        show : true,
+                        formatter: "connectCnt : " + flowData[i-1].connectCnt + "\n" + "traffic : " + flowData[i-1].traffic
+                    },
+                })
+            }
+        }
+        let option : any =  {
+            title: {
+                text: 'Flow Graph'
+            },
+            tooltip: {},
+            animationDurationUpdate: 1500,
+            animationEasingUpdate: 'quinticInOut',
+            series: [
+                {
+                    type: 'graph',
+                    layout: 'none',
+                    symbolSize: 100,
+                    roam: true,
+                    label: {
+                        show: true
+                    },
+                    edgeSymbol: ['circle', 'arrow'],
+                    edgeSymbolSize: [4, 10],
+                    edgeLabel: {
+                        fontSize: 15
+                    },
+                    data: positionData,
+                    links: link,
+                    lineStyle: {
+                        opacity: 0.9,
+                        width: 2,
+                    }
+                }
+            ]
+        };
         myChart.setOption(option, true); // 更新图表数据
     }
 };
 
 // 生成节点的坐标，n为节点数，中心节点（默认0,0）,radius为半径默认100
-function getPosition(flowData, radius=300) {
+function getPosition(flowData : any, radius=300) {
     const positionData = [];
     const angleStep = 2 * Math.PI / flowData.length;  // 每个节点的角度间隔
 
@@ -103,74 +162,6 @@ function getPosition(flowData, radius=300) {
     return positionData;
 }
 
-// 根据数据生成图表配置项
-const getChartOption = (flowData: any) => {
-    let positionData = getPosition(flowData)
-    positionData.unshift({
-        name: ip.value,
-        x : 0,
-        y : 0
-    })
-    let link = []
-    if(isSource.value){
-        for(let i = 1;i < positionData.length;i++){
-            link.push({
-                source: 0,
-                target: i,
-                label: {
-                    show : true,
-                    formatter: "connectCnt : " + flowData[i-1].connectCnt + "\n" + "traffic : " + flowData[i-1].traffic
-                },
-            })
-        }
-    }
-    else{
-        for(let i = 1;i < positionData.length;i++){
-            link.push({
-                source: i,
-                target: 0,
-                label: {
-                    show : true,
-                    formatter: "connectCnt : " + flowData[i-1].connectCnt + "\n" + "traffic : " + flowData[i-1].traffic
-                },
-            })
-        }
-    }
-    console.log("link")
-    console.log(link)
-    console.log(positionData)
-    return {
-        title: {
-            text: 'Flow Graph'
-        },
-        tooltip: {},
-        animationDurationUpdate: 1500,
-        animationEasingUpdate: 'quinticInOut',
-        series: [
-            {
-                type: 'graph',
-                layout: 'none',
-                symbolSize: 100,
-                roam: true,
-                label: {
-                    show: true
-                },
-                edgeSymbol: ['circle', 'arrow'],
-                edgeSymbolSize: [4, 10],
-                edgeLabel: {
-                    fontSize: 15
-                },
-                data: positionData,
-                links: link,
-                lineStyle: {
-                    opacity: 0.9,
-                    width: 2,
-                    curveness: 0
-                }
-            }
-        ]
-    };
-};
 </script>
 
 <style scoped>

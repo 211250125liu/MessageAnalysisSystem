@@ -85,14 +85,14 @@ const disabled = ref(false)
 const total = ref(0)
 const list = ref([])
 const showData = ref(false)
-const rawData = ref("")
-const rawAsciiData = ref(null)
+const rawData = ref<string>("")
+const rawAsciiData = ref("")
 
 // rawData转换
 const handleRowClick = (row: any) => {
     for(let item of list.value){
-        if(row.messageId === item.messageId){
-            rawData.value = item.rawData
+        if(row.messageId === (item as any).messageId){
+            rawData.value = (item as any).rawData
             showData.value = true
             break
         }
@@ -113,24 +113,24 @@ const handleRowClick = (row: any) => {
         const spacedLine = line.slice(0, 8).join(' ') + '  ' + line.slice(8).join(' '); // 每 8 个字符之间加两个空格
         rows.push(spacedLine);
     }
-    rawAsciiData.value = rows.join('\n');
-    console.log(rawAsciiData.value)
+    rawAsciiData.value = rows.join('\n') || '';
+
 
     // 两个之间加一个空格
-    rawData.value = rawData.value.match(/.{1,2}/g).join(' ');
-    console.log(rawData.value)
-    // 2. 每16个字符后添加两个空格
-    let chunks16 = rawData.value.match(/.{1,48}/g).map(chunk => {
-        // 在每16个字符之间添加两个空格
-        return chunk.slice(0, 23) + '  ' + chunk.slice(23);
-    });
-    console.log(chunks16)
+    if (rawData.value) {
+        rawData.value = (rawData.value as string).match(/.{1,2}/g)?.join(' ') || '';
+    }
 
-    // 3. 每32个字符后换行
-    rawData.value = chunks16.join('\n');
-    console.log("rawData")
-    console.log(rawData.value)
-
+    if(rawData.value) {
+        // 2. 每16个字符后添加两个空格
+        let chunks16: string[];
+        chunks16 = ((rawData.value! as string).match(/.{1,48}/g) as any).map((chunk : any) => {
+            // 在每16个字符之间添加两个空格
+            return chunk.slice(0, 23) + '  ' + chunk.slice(23);
+        }) || [];
+        // 3. 每32个字符后换行
+        rawData.value = chunks16.join('\n');
+    }
 }
 
 const filters = ref({
@@ -143,7 +143,7 @@ const filters = ref({
 
 //数据格式化
 const formattedData = computed(() => {
-    return list.value.map((data) => ({
+    return list.value.map((data : any) => ({
         No: data.message.messageId, // 序号
         time: data.message.time, // 提取 message.time
         srcIp: data.message.srcIp, // 提取 message.srcIp
@@ -162,7 +162,7 @@ onBeforeMount(()=>{
 
 let getData = async () =>{
     let data  = await getMessageByMacAndIp(filters.value.sourceMac,filters.value.destMac,
-    filters.value.sourceIp,filters.value.destIp,currentPage.value,pageSize.value)
+    filters.value.sourceIp,filters.value.destIp,currentPage.value,pageSize.value) as any
     console.log("data")
     console.log(data)
     total.value = data.total
