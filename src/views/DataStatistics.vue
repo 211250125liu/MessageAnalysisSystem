@@ -1,7 +1,6 @@
 <template>
     <el-card class="box-card">
-        <h1>Welcome to Home Page</h1>
-        <p>This is the home page content.</p>
+        <h1>数据统计界面</h1>
     </el-card>
 </template>
 

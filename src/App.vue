@@ -4,7 +4,6 @@
         <el-aside width="250px" style="background-color: #f4f4f4;">
             <Menu />
         </el-aside>
-
         <!-- 右侧内容区 -->
         <el-main>
             <router-view />

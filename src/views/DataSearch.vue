@@ -76,7 +76,7 @@
 
 <script lang="ts" setup>
 import {computed, onBeforeMount, ref} from 'vue'
-import {getMessage, getMessageLen} from "../api/messageApi.ts"
+import {getMessageByMacAndIp} from "../api/messageApi.ts";
 
 const currentPage = ref(1)
 const pageSize = ref(10)
@@ -88,6 +88,7 @@ const showData = ref(false)
 const rawData = ref("")
 const rawAsciiData = ref(null)
 
+// rawData转换
 const handleRowClick = (row: any) => {
     for(let item of list.value){
         if(row.messageId === item.messageId){
@@ -130,7 +131,6 @@ const handleRowClick = (row: any) => {
     console.log("rawData")
     console.log(rawData.value)
 
-      // 每行之间换行
 }
 
 const filters = ref({
@@ -161,8 +161,11 @@ onBeforeMount(()=>{
 })
 
 let getData = async () =>{
-    let data  = await getMessage(currentPage.value,pageSize.value)
-    total.value = await getMessageLen()
+    let data  = await getMessageByMacAndIp(filters.value.sourceMac,filters.value.destMac,
+    filters.value.sourceIp,filters.value.destIp,currentPage.value,pageSize.value)
+    console.log("data")
+    console.log(data)
+    total.value = data.total
     list.value = data.list
     // console.log(total.value)
     // console.log(list.value)
