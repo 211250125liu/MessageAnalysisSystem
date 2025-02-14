@@ -3,7 +3,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "http://172.29.7.168:65348/$1"
+      "destination": "/api/proxy"
     }
   ]
 }
