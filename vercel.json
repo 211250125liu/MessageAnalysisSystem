@@ -1,4 +1,10 @@
 {
   "version": 2,
-  "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "http://172.29.7.168:65348/$1"
+    }
+  ]
 }
+
