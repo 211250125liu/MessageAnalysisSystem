@@ -40,14 +40,16 @@
 
     <el-table :data="formattedData" stripe style="width: 100%"
               @row-click="handleRowClick" >
-        <el-table-column prop="No" label="No" width="80" />
-        <el-table-column prop="time" label="Time" width="250" />
-        <el-table-column prop="srcIp" label="SrcIp" width="180" />
-        <el-table-column prop="dstIp" label="DstIp" width="180" />
-        <el-table-column prop="srcMAC" label="SrcMAC" width="180" />
-        <el-table-column prop="dstMAC" label="DstMAC" width="180" />
-        <el-table-column prop="protocol" label="Protocol" width="100" />
+        <el-table-column prop="No" label="No" width="50" />
+        <el-table-column prop="time" label="Time" width="230" />
+        <el-table-column prop="srcIp" label="SrcIp" width="130" />
+        <el-table-column prop="dstIp" label="DstIp" width="130" />
+        <el-table-column prop="srcMAC" label="SrcMAC" width="150" />
+        <el-table-column prop="dstMAC" label="DstMAC" width="150" />
+        <el-table-column prop="protocol" label="Protocol" width="90" />
         <el-table-column prop="length" label="Length" width="80" />
+        <el-table-column prop="eventType" label="eventType" width="100" />
+        <el-table-column prop="ciaLevel" label="ciaLevel" width="100" />
         <el-table-column prop="information" label="Info" width="180" />
     </el-table>
     <el-pagination
@@ -60,8 +62,8 @@
         :background="background"
         layout="->,total, sizes, prev, pager, next, jumper "
         :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
+        @size-change="getData"
+        @current-change="getData"
     />
     <div v-if="showData" style="display: flex">
         <span> rawData </span>
@@ -76,14 +78,14 @@
 
 <script lang="ts" setup>
 import {computed, onBeforeMount, ref} from 'vue'
-import {getMessageByMacAndIp} from "../api/messageApi.ts";
+import {getLogByMessageId, getMessageByMacAndIp} from "../api/messageApi.ts";
 
 const currentPage = ref(1)
 const pageSize = ref(10)
 const background = ref(false)
 const disabled = ref(false)
 const total = ref(0)
-const list = ref([])
+const list = ref<any[]>([])
 const showData = ref(false)
 const rawData = ref<string>("")
 const rawAsciiData = ref("")
@@ -140,8 +142,7 @@ const filters = ref({
     destMac: ''
 });
 
-
-//数据格式化
+// 数据格式化
 const formattedData = computed(() => {
     return list.value.map((data : any) => ({
         No: data.message.messageId, // 序号
@@ -152,7 +153,9 @@ const formattedData = computed(() => {
         dstMAC: data.messageDetail.ethernet.dst,
         protocol: data.message.protocol, // 提取 message.protocol
         length: data.message.length, // 提取 message.length
-        information: data.information // 提取 information
+        information: data.information, // 提取 information
+        eventType : data.message.eventType,
+        ciaLevel : data.message.ciaLevel,
     }));
 });
 
@@ -161,12 +164,18 @@ onBeforeMount(()=>{
 })
 
 let getData = async () =>{
-    let data  = await getMessageByMacAndIp(filters.value.sourceMac,filters.value.destMac,
+    let data = await getMessageByMacAndIp(filters.value.sourceMac,filters.value.destMac,
     filters.value.sourceIp,filters.value.destIp,currentPage.value,pageSize.value) as any
-    console.log("data")
-    console.log(data)
     total.value = data.total
     list.value = data.list
+    for(let item of list.value){
+        let message = item.message
+        let log : any = await getLogByMessageId(message.messageId)
+        if(log) {
+            item.message.eventType = log.eventType
+            item.message.ciaLevel = log.ciaLevel
+        }
+    }
     // console.log(total.value)
     // console.log(list.value)
 }
@@ -178,11 +187,5 @@ const resetFilter = () => {
     filters.value.destMac = '';
 };
 
-const handleSizeChange = () => {
-    getData()
-}
-const handleCurrentChange = () => {
-    getData()
-}
 
 </script>

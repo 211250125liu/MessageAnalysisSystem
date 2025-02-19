@@ -47,3 +47,11 @@ dstIp : string, pageNum : number,pageSize : number){
         }
     })
 }
+
+export function getLogByMessageId(messageId : number){
+    return request.get('/log/selectByMessageId',{
+        params:{
+            messageId : messageId
+        }
+    })
+}
