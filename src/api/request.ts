@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 export const request = axios.create({
-    baseURL: '/api',  // 注意！！ 这里是全局统一加上了 '/api' 前缀，也就是说所有接口都会加上'/api前缀在，页面里面写接口的时候就不要加 '/api了，否则会出现2个'/api'，类似 '/api/api/user这样的报错，切记！！！
+    baseURL: process.env.NODE_ENV === 'production' ? 'http://172.29.7.168:65348' : '/api',
     timeout: 120000
 })
 
