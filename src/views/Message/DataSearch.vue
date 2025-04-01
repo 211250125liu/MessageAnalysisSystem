@@ -1,38 +1,60 @@
 <template>
     <el-row :gutter="20">
-        <el-col :span="4">
+        <el-col :span="3">
             <el-input
                 v-model="filters.sourceIp"
-                placeholder="输入源 IP"
+                placeholder="源 IP"
                 prefix-icon="el-icon-search"
                 clearable
             />
         </el-col>
-        <el-col :span="4">
+        <el-col :span="3">
             <el-input
                 v-model="filters.destIp"
-                placeholder="输入目的 IP"
+                placeholder="目的 IP"
                 prefix-icon="el-icon-search"
                 clearable
             />
         </el-col>
-        <el-col :span="4">
+        <el-col :span="3">
             <el-input
                 v-model="filters.sourceMac"
-                placeholder="输入源 MAC 地址"
+                placeholder="源 MAC 地址"
+                prefix-icon="el-icon-search"
+                clearable
+            />
+        </el-col>
+        <el-col :span="3">
+            <el-input
+                v-model="filters.destMac"
+                placeholder="目的 MAC 地址"
                 prefix-icon="el-icon-search"
                 clearable
             />
         </el-col>
         <el-col :span="4">
-            <el-input
-                v-model="filters.destMac"
-                placeholder="输入目的 MAC 地址"
-                prefix-icon="el-icon-search"
-                clearable
+            <el-date-picker
+                v-model="filters.timeRange"
+                type="datetimerange"
+                range-separator="至"
+                start-placeholder="开始时间"
+                end-placeholder="结束时间"
+                value-format="YYYY-MM-DD HH:mm:ss"
+                style="width: 100%"
             />
         </el-col>
-        <el-col :span="6" class="mt-4">
+        <el-col :span="3">
+            <el-select
+                v-model="filters.protocol"
+                placeholder="选择协议类型"
+                clearable
+                style="width: 100%"
+            >
+                <el-option label="TCP" value="TCP" />
+                <el-option label="UDP" value="UDP" />
+            </el-select>
+        </el-col>
+        <el-col :span="5" class="mt-4">
             <el-button type="primary" @click="getData">筛选</el-button>
             <el-button @click="resetFilter">重置筛选</el-button>
         </el-col>
@@ -40,7 +62,7 @@
 
     <el-table :data="formattedData" stripe style="width: 100%"
               @row-click="handleRowClick" >
-        <el-table-column prop="No" label="No" width="50" />
+        <el-table-column prop="No" label="No" width="80" />
         <el-table-column prop="time" label="Time" width="230" />
         <el-table-column prop="srcIp" label="SrcIp" width="130" />
         <el-table-column prop="dstIp" label="DstIp" width="130" />
@@ -48,9 +70,7 @@
         <el-table-column prop="dstMAC" label="DstMAC" width="150" />
         <el-table-column prop="protocol" label="Protocol" width="90" />
         <el-table-column prop="length" label="Length" width="80" />
-        <el-table-column prop="eventType" label="eventType" width="100" />
-        <el-table-column prop="ciaLevel" label="ciaLevel" width="100" />
-        <el-table-column prop="information" label="Info" width="180" />
+        <el-table-column prop="information" label="Info" width="320" />
     </el-table>
     <el-pagination
         style="margin-top: 1rem"
@@ -65,23 +85,20 @@
         @size-change="getData"
         @current-change="getData"
     />
-    <div v-if="showData" style="display: flex">
-        <span> rawData </span>
-        <div style="width: 30rem;height: 15rem;white-space: pre-line; margin:0 2rem;letter-spacing:0.1em;text-align: start " >
-            {{rawData}}
-        </div>
-        <div  style="width: 20rem;height: 15rem;white-space: pre-line;letter-spacing:0.2rem" >
-            {{rawAsciiData}}
-        </div>
-    </div>
+
+    <PacketDetail
+        v-model:modelValue="drawerVisible"
+        :item-data="currentRawItem"
+    />
 </template>
 
 <script lang="ts" setup>
 import {computed, onBeforeMount, ref} from 'vue'
-import {getLogByMessageId, getMessageByMacAndIp} from "../api/messageApi.ts";
+import {getMessageByConditions} from "../../api/apiForMessage/messageApi.ts";
+import PacketDetail from "../../components/PacketDetail.vue";
 
 const currentPage = ref(1)
-const pageSize = ref(10)
+const pageSize = ref(20)
 const background = ref(false)
 const disabled = ref(false)
 const total = ref(0)
@@ -91,7 +108,7 @@ const rawData = ref<string>("")
 const rawAsciiData = ref("")
 
 // rawData转换
-const handleRowClick = (row: any) => {
+/*const handleRowClick = (row: any) => {
     for(let item of list.value){
         if(row.messageId === (item as any).messageId){
             rawData.value = (item as any).rawData
@@ -101,7 +118,6 @@ const handleRowClick = (row: any) => {
     }
     //转换为可读字符串
     const hexArray = rawData.value.match(/.{2}/g) || [];  // 每两个字符为一组，转为数组
-
     // 将16进制码和对应的字符一起组合起来
     const formattedHex = hexArray.map(hex => {
         const code = parseInt(hex, 16);
@@ -116,13 +132,10 @@ const handleRowClick = (row: any) => {
         rows.push(spacedLine);
     }
     rawAsciiData.value = rows.join('\n') || '';
-
-
     // 两个之间加一个空格
     if (rawData.value) {
         rawData.value = (rawData.value as string).match(/.{1,2}/g)?.join(' ') || '';
     }
-
     if(rawData.value) {
         // 2. 每16个字符后添加两个空格
         let chunks16: string[];
@@ -133,13 +146,15 @@ const handleRowClick = (row: any) => {
         // 3. 每32个字符后换行
         rawData.value = chunks16.join('\n');
     }
-}
+}*/
 
 const filters = ref({
     sourceIp: '',
     destIp: '',
     sourceMac: '',
-    destMac: ''
+    destMac: '',
+    timeRange: [],
+    protocol: ''
 });
 
 // 数据格式化
@@ -154,8 +169,7 @@ const formattedData = computed(() => {
         protocol: data.message.protocol, // 提取 message.protocol
         length: data.message.length, // 提取 message.length
         information: data.information, // 提取 information
-        eventType : data.message.eventType,
-        ciaLevel : data.message.ciaLevel,
+        _raw: data
     }));
 });
 
@@ -163,21 +177,15 @@ onBeforeMount(()=>{
     getData()
 })
 
-let getData = async () =>{
-    let data = await getMessageByMacAndIp(filters.value.sourceMac,filters.value.destMac,
-    filters.value.sourceIp,filters.value.destIp,currentPage.value,pageSize.value) as any
+const getData = async () =>{
+    let startTime,endTime
+    if(filters.value.timeRange){
+        startTime = filters.value.timeRange[0]
+        endTime = filters.value.timeRange[1]
+    }
+    let data = await getMessageByConditions(filters.value.sourceIp,filters.value.destIp, filters.value.sourceMac,filters.value.destMac, filters.value.protocol, startTime,endTime,currentPage.value,pageSize.value) as any
     total.value = data.total
     list.value = data.list
-    for(let item of list.value){
-        let message = item.message
-        let log : any = await getLogByMessageId(message.messageId)
-        if(log) {
-            item.message.eventType = log.eventType
-            item.message.ciaLevel = log.ciaLevel
-        }
-    }
-    // console.log(total.value)
-    // console.log(list.value)
 }
 // 重置筛选
 const resetFilter = () => {
@@ -185,7 +193,17 @@ const resetFilter = () => {
     filters.value.destIp = '';
     filters.value.sourceMac = '';
     filters.value.destMac = '';
+    filters.value.timeRange = []
+    filters.value.protocol = ''
 };
 
+const drawerVisible = ref(false);
+const currentRawItem = ref(null); // 存储原始数据
+
+// 点击行时触发
+const handleRowClick = (row) => {
+    currentRawItem.value = row._raw;
+    drawerVisible.value = true;
+};
 
 </script>

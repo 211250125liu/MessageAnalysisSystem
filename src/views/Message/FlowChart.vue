@@ -35,7 +35,7 @@
 
 <script lang="ts" setup>
 import { ref, onMounted, nextTick } from 'vue';
-import { getFlowBySource, getFlowByTarget } from "../api/flowApi.ts";
+import { getFlowBySource, getFlowByTarget } from "../../api/apiForMessage/flowApi.ts";
 import * as echarts from 'echarts';
 
 // 获取 ip 和是否是源节点

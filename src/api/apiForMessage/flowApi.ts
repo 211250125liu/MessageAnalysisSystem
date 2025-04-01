@@ -1,4 +1,4 @@
-import {request} from "./request.ts";
+import {request} from "../request.ts";
 
 export function getFlowBySource(sourceIp : string){
     return request.get('/flow/source/' + sourceIp)

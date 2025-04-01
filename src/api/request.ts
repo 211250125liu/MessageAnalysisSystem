@@ -5,6 +5,11 @@ export const request = axios.create({
     timeout: 120000
 })
 
+export const requestForLog = axios.create({
+    baseURL: process.env.NODE_ENV === 'production' ? 'http://172.29.7.168:35000' : 'api2',
+    timeout: 120000
+})
+
 // request 拦截器
 // 可以自请求发送前对请求做一些处理
 // 比如统一加token，对请求参数统一加密
@@ -32,6 +37,30 @@ request.interceptors.response.use(
         if (typeof res === 'string') {
             res = res ? JSON.parse(res) : res
             // console.log(res.data.list[0])
+        }
+        return res;
+    },
+    error => {
+        console.log('err' + error) // for debug
+        return Promise.reject(error)
+    }
+)
+
+requestForLog.interceptors.request.use(config => {
+    config.headers['Content-Type'] = 'application/json;charset=utf-8';
+    return config
+}, error => {
+    return Promise.reject(error)
+});
+
+requestForLog.interceptors.response.use(
+    response => {
+        let res = response.data.result;
+        if (response.config.responseType === 'blob') {
+            return res
+        }
+        if (typeof res === 'string') {
+            res = res ? JSON.parse(res) : res
         }
         return res;
     },

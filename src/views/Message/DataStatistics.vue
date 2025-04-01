@@ -1,0 +1,222 @@
+<template>
+    <div class="stats-container">
+        <el-card class="filter-card">
+            <div class="filter-row">
+                <el-date-picker
+                    v-model="timeRange"
+                    type="datetimerange"
+                    range-separator="至"
+                    start-placeholder="开始时间"
+                    end-placeholder="结束时间"
+                    :value-format="'YYYY-MM-DD HH:mm:ss'"
+                    :disabled-date="disabledDate"
+                    @change="handleDateChange"
+                />
+                <el-button
+                    type="primary"
+                    @click="getData"
+                    :loading="loading"
+                    style="margin-left: 20px"
+                >
+                    查询
+                </el-button>
+            </div>
+        </el-card>
+
+        <el-row :gutter="20" class="chart-row">
+            <el-col :span="12">
+                <el-card class="chart-card">
+                    <div class="chart-title">每小时消息数量变化</div>
+                    <div class="chart-container">
+                        <line-chart
+                            v-if="showChart && messageChartData.length > 0"
+                            :chart-data="messageChartData"
+                        />
+                        <el-empty v-else :description="showChart ? '暂无数据' : '请点击查询按钮获取数据'" />
+                    </div>
+                </el-card>
+            </el-col>
+            <el-col :span="12">
+                <el-card class="chart-card">
+                    <div class="chart-title">网络流量变化 (字节)</div>
+                    <div class="chart-container">
+                        <area-chart
+                            v-if="showChart && trafficChartData.length > 0"
+                            :chart-data="trafficChartData"
+                        />
+                        <el-empty v-else :description="showChart ? '暂无数据' : '请点击查询按钮获取数据'" />
+                    </div>
+                </el-card>
+            </el-col>
+        </el-row>
+    </div>
+</template>
+
+<script setup lang="ts">
+import {ref, computed, onBeforeMount} from 'vue'
+import {getStatsHourly} from "../../api/apiForMessage/DataStatisticsApi.ts";
+import AreaChart from '../../components/chart/AreaChart.vue'
+import LineChart from '../../components/chart/LineChart.vue'
+import dayjs from 'dayjs'
+import { ElMessage } from 'element-plus'
+
+// 时间范围选择
+const timeRange = ref([
+    dayjs('2024-01-15 10:00:00').format('YYYY-MM-DD HH:mm:ss'),
+    dayjs('2024-01-16 10:00:00').format('YYYY-MM-DD HH:mm:ss')
+]);
+
+// 图表数据
+const rawData = ref([])
+const loading = ref(false)
+const showChart = ref(false) // 新增：控制是否显示图表
+
+// 禁用日期规则（最大选择1天）
+const disabledDate = (time: Date) => {
+    if (!timeRange.value) return false
+    const startTime = new Date(timeRange.value[0]).getTime()
+    const maxRange = 24 * 60 * 60 * 1000 // 24小时
+    return time.getTime() > startTime + maxRange
+}
+
+// 处理日期变化
+const handleDateChange = (val: any[]) => {
+    if (!val || val.length !== 2) return
+
+    const start = new Date(val[0]).getTime()
+    const end = new Date(val[1]).getTime()
+    const minRange = 2 * 60 * 60 * 1000 // 最小2小时
+    const maxRange = 24 * 60 * 60 * 1000 // 最大24小时
+
+    if (end - start < minRange) {
+        ElMessage.warning('时间范围不能小于2小时')
+        timeRange.value = [
+            dayjs(start).format('YYYY-MM-DD HH:mm:ss'),
+            dayjs(start + minRange).format('YYYY-MM-DD HH:mm:ss')
+        ]
+    } else if (end - start > maxRange) {
+        ElMessage.warning('时间范围不能超过24小时')
+        timeRange.value = [
+            dayjs(start).format('YYYY-MM-DD HH:mm:ss'),
+            dayjs(start + maxRange).format('YYYY-MM-DD HH:mm:ss')
+        ]
+    }
+    // 移除自动获取数据的逻辑
+}
+
+// 获取数据
+const getData = async () => {
+    if (!timeRange.value || timeRange.value.length !== 2) {
+        ElMessage.warning('请选择时间范围')
+        return
+    }
+
+    try {
+        loading.value = true
+        showChart.value = false // 查询时先隐藏图表
+        const res = await getStatsHourly(timeRange.value[0], timeRange.value[1])
+        console.log(res)
+        rawData.value = res || []
+        showChart.value = true // 数据获取成功后显示图表
+    } catch (error) {
+        ElMessage.error('获取数据失败')
+        console.error(error)
+        showChart.value = false
+    } finally {
+        loading.value = false
+    }
+}
+
+// 处理消息数量图表数据
+const messageChartData = computed(() => {
+    return fillMissingHours(rawData.value, timeRange.value, 'messageCount', 'count');
+})
+
+// 处理流量图表数据
+const trafficChartData = computed(() => {
+    return fillMissingHours(rawData.value, timeRange.value, 'totalBytes', 'traffic');
+})
+
+// 补齐缺失小时数据的通用函数
+function fillMissingHours(rawData, timeRange, valueKey, fieldName) {
+    // 解析时间范围
+    const start = new Date(timeRange[0]);
+    const end = new Date(timeRange[1]);
+
+    // 计算总小时数（最大24小时）
+    const totalHours = Math.min(24, Math.ceil((end - start) / (1000 * 60 * 60)));
+
+    // 创建按小时分组的数据映射
+    const dataMap = {};
+    rawData.forEach(item => {
+        const hourTime = new Date(item.hourTime);
+        // 只处理时间范围内的数据
+        if (hourTime >= start && hourTime <= end) {
+            const hour = hourTime.getHours();
+            dataMap[hour] = {
+                time: `${hour.toString().padStart(2, '0')}:00`,
+                [fieldName]: item[valueKey]
+            };
+        }
+    });
+
+    // 生成完整的小时序列
+    const result = [];
+    const current = new Date(start);
+
+    for (let i = 0; i < totalHours; i++) {
+        const hour = current.getHours();
+        const hourStr = `${hour.toString().padStart(2, '0')}:00`;
+
+        if (dataMap[hour]) {
+            result.push(dataMap[hour]);
+        } else {
+            result.push({
+                time: hourStr,
+                [fieldName]: 0
+            });
+        }
+
+        // 移动到下一小时
+        current.setHours(current.getHours() + 1);
+    }
+
+    return result;
+}
+
+// 移除onBeforeMount中的自动加载，改为手动点击查询
+</script>
+
+<style scoped>
+.stats-container {
+    padding: 20px;
+}
+
+.filter-card {
+    margin-bottom: 20px;
+}
+
+.filter-row {
+    display: flex;
+    align-items: center;
+}
+
+.chart-row {
+    margin-top: 20px;
+}
+
+.chart-card {
+    height: 100%;
+}
+
+.chart-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.chart-container {
+    height: 400px;
+}
+</style>
