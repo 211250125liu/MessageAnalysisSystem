@@ -178,7 +178,7 @@ onBeforeMount(()=>{
 })
 
 const getData = async () =>{
-    let startTime,endTime
+    let startTime = "",endTime = ""
     if(filters.value.timeRange){
         startTime = filters.value.timeRange[0]
         endTime = filters.value.timeRange[1]
@@ -201,7 +201,7 @@ const drawerVisible = ref(false);
 const currentRawItem = ref(null); // 存储原始数据
 
 // 点击行时触发
-const handleRowClick = (row) => {
+const handleRowClick = (row : any) => {
     currentRawItem.value = row._raw;
     drawerVisible.value = true;
 };

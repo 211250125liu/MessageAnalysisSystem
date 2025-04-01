@@ -33,7 +33,7 @@ const initChart = () => {
         },
         xAxis: {
             type: 'category',
-            data: props.chartData.map(item => item.time),
+            data: props.chartData.map(item => (item as { time: string }).time),
             axisLabel: {
                 rotate: 45
             }
@@ -46,7 +46,7 @@ const initChart = () => {
             {
                 name: '消息数量',
                 type: 'line',
-                data: props.chartData.map(item => item.count),
+                data: props.chartData.map(item => (item as {count : number}).count),
                 smooth: true,
                 itemStyle: {
                     color: '#409EFF'

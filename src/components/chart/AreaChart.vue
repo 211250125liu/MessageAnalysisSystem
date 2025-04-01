@@ -41,7 +41,7 @@ const initChart = () => {
         },
         xAxis: {
             type: 'category',
-            data: props.chartData.map(item => item.time),
+            data: props.chartData.map(item => (item as { time: string }).time),
             axisLabel: {
                 rotate: 45
             }
@@ -58,7 +58,7 @@ const initChart = () => {
                 name: '网络流量',
                 type: 'line',
                 stack: 'total',
-                data: props.chartData.map(item => item.traffic),
+                data: props.chartData.map(item => (item as {traffic : number}).traffic),
                 smooth: true,
                 itemStyle: {
                     color: '#67C23A'
@@ -82,11 +82,11 @@ const initChart = () => {
 }
 
 // 格式化字节显示
-const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 B'
-    const k = 1024
-    const sizes = ['B', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i))).toFixed(2) + ' ' + sizes[i]
+const formatBytes = (bytes: number): string => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
 }
 </script>

@@ -90,6 +90,7 @@ const timeRange = ref([
 const ipType = ref('src') // src或dst
 const topN = ref(5)
 const loading = ref(false)
+
 const rawData = ref([])
 const showChart = ref(false) // 新增：控制图表显示状态
 
@@ -114,9 +115,9 @@ const fetchData = async () => {
                 const [start, end] = timeRange.value
 
                 if (ipType.value === 'src') {
-                        rawData.value = await getTopSrcIp(start, end, topN.value)
+                        rawData.value = await getTopSrcIp(start, end, topN.value) as any
                 } else {
-                        rawData.value = await getTopDstIp(start, end, topN.value)
+                        rawData.value = await getTopDstIp(start, end, topN.value) as any
                 }
 
                 if (!rawData.value || rawData.value.length === 0) {
@@ -136,14 +137,14 @@ const fetchData = async () => {
 // 处理消息数量图表数据
 const messageChartData = computed(() => {
         return [...rawData.value]
-            .sort((a, b) => b.messageCount - a.messageCount)
+            .sort((a, b) => (b as { messageCount: number }).messageCount - (a as { messageCount: number }).messageCount)
             .slice(0, topN.value)
 })
 
 // 处理流量图表数据
 const trafficChartData = computed(() => {
         return [...rawData.value]
-            .sort((a, b) => b.totalBytes - a.totalBytes)
+            .sort((a, b) => (b as { totalBytes: number }).totalBytes - (a as { totalBytes: number }).totalBytes)
             .slice(0, topN.value)
 })
 </script>

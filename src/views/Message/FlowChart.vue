@@ -39,7 +39,7 @@ import { getFlowBySource, getFlowByTarget } from "../../api/apiForMessage/flowAp
 import * as echarts from 'echarts';
 
 // 获取 ip 和是否是源节点
-const ip = ref('');
+const ip = ref('10.193.21.253');
 const isSource = ref(true);
 const options = [
     { value: true, label: '源Ip节点' },

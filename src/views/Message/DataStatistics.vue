@@ -61,7 +61,7 @@ import dayjs from 'dayjs'
 import { ElMessage } from 'element-plus'
 
 // 时间范围选择
-const timeRange = ref([
+const timeRange = ref<[string,string]>([
     dayjs('2024-01-15 10:00:00').format('YYYY-MM-DD HH:mm:ss'),
     dayjs('2024-01-16 10:00:00').format('YYYY-MM-DD HH:mm:ss')
 ]);
@@ -116,7 +116,7 @@ const getData = async () => {
         showChart.value = false // 查询时先隐藏图表
         const res = await getStatsHourly(timeRange.value[0], timeRange.value[1])
         console.log(res)
-        rawData.value = res || []
+        rawData.value = (res || []) as any
         showChart.value = true // 数据获取成功后显示图表
     } catch (error) {
         ElMessage.error('获取数据失败')
@@ -137,17 +137,39 @@ const trafficChartData = computed(() => {
     return fillMissingHours(rawData.value, timeRange.value, 'totalBytes', 'traffic');
 })
 
-// 补齐缺失小时数据的通用函数
-function fillMissingHours(rawData, timeRange, valueKey, fieldName) {
+interface HourDataItem {
+    hourTime: string | Date;  // 原始数据中的时间字段
+    [key: string]: any;      // 其他动态字段
+}
+
+interface FilledHourData {
+    time: string;           // 格式化后的小时时间 "00:00" 格式
+    [fieldName: string]: any; // 动态字段名对应的值
+}
+
+/**
+ * 补齐缺失小时数据的通用函数
+ * @param rawData 原始数据数组
+ * @param timeRange 时间范围 [开始时间, 结束时间]
+ * @param valueKey 原始数据中取值的关键字段
+ * @param fieldName 结果中显示的字段名
+ * @returns 补齐后的小时数据数组
+ */
+function fillMissingHours(
+    rawData: HourDataItem[],
+    timeRange: [Date | string, Date | string],
+    valueKey: string,
+    fieldName: string
+): FilledHourData[] {
     // 解析时间范围
     const start = new Date(timeRange[0]);
     const end = new Date(timeRange[1]);
 
     // 计算总小时数（最大24小时）
-    const totalHours = Math.min(24, Math.ceil((end - start) / (1000 * 60 * 60)));
+    const totalHours = Math.min(24, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60)));
 
     // 创建按小时分组的数据映射
-    const dataMap = {};
+    const dataMap: Record<number, FilledHourData> = {};
     rawData.forEach(item => {
         const hourTime = new Date(item.hourTime);
         // 只处理时间范围内的数据
@@ -161,21 +183,17 @@ function fillMissingHours(rawData, timeRange, valueKey, fieldName) {
     });
 
     // 生成完整的小时序列
-    const result = [];
+    const result: FilledHourData[] = [];
     const current = new Date(start);
 
     for (let i = 0; i < totalHours; i++) {
         const hour = current.getHours();
         const hourStr = `${hour.toString().padStart(2, '0')}:00`;
 
-        if (dataMap[hour]) {
-            result.push(dataMap[hour]);
-        } else {
-            result.push({
-                time: hourStr,
-                [fieldName]: 0
-            });
-        }
+        result.push(dataMap[hour] || {
+            time: hourStr,
+            [fieldName]: 0
+        });
 
         // 移动到下一小时
         current.setHours(current.getHours() + 1);
@@ -183,8 +201,6 @@ function fillMissingHours(rawData, timeRange, valueKey, fieldName) {
 
     return result;
 }
-
-// 移除onBeforeMount中的自动加载，改为手动点击查询
 </script>
 
 <style scoped>

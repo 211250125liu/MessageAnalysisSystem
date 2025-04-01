@@ -22,7 +22,7 @@ const props = defineProps({
 })
 
 const chartRef = ref(null)
-let chartInstance = null
+let chartInstance: echarts.ECharts | null = null;
 
 const initChart = () => {
     if (!chartRef.value) return
@@ -43,7 +43,7 @@ const updateChart = () => {
         },
         xAxis: {
             type: 'category',
-            data: props.chartData.map(item => item[props.xKey]),
+            data: props.chartData.map(item => (item as {[key: string]: number})[props.xKey]),
             axisLabel: {
                 rotate: 30
             }
@@ -55,7 +55,7 @@ const updateChart = () => {
             {
                 name: props.yKey === 'messageCount' ? '消息数量' : '流量(字节)',
                 type: 'bar',
-                data: props.chartData.map(item => item[props.yKey]),
+                data: props.chartData.map(item => (item as {[key: string]: number})[props.yKey]),
                 itemStyle: {
                     color: '#409EFF'
                 }
