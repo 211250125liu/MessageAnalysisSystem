@@ -34,33 +34,9 @@
                 <el-icon><BellFilled /></el-icon>
                 <span>日志</span>
             </template>
-            <el-menu-item index="/fieldLog">
-                <el-icon><Files /></el-icon>
-                <span>field日志</span>
-            </el-menu-item>
-            <el-menu-item index="/filePathLog">
-                <el-icon><Files /></el-icon>
-                <span>filePath日志</span>
-            </el-menu-item>
-            <el-menu-item index="/flowStartLog">
-                <el-icon><Files /></el-icon>
-                <span>flowStart日志</span>
-            </el-menu-item>
-            <el-menu-item index="/idLog">
+            <el-menu-item index="/wideTable">
                 <el-icon><Guide /></el-icon>
-                <span>id日志</span>
-            </el-menu-item>
-            <el-menu-item index="/productFamilyLog">
-                <el-icon><Files /></el-icon>
-                <span>productFamily日志</span>
-            </el-menu-item>
-            <el-menu-item index="/rcodeNameLog">
-                <el-icon><Files /></el-icon>
-                <span>rcodeName日志</span>
-            </el-menu-item>
-            <el-menu-item index="/rtLog">
-                <el-icon><Files /></el-icon>
-                <span>rt日志</span>
+                <span>宽表</span>
             </el-menu-item>
         </el-sub-menu>
     </el-menu>

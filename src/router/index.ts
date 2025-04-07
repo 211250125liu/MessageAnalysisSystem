@@ -1,7 +1,7 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import {createRouter, createWebHashHistory, createWebHistory} from 'vue-router'
 
 const router = createRouter({
-    history: createWebHistory(import.meta.env.BASE_URL),
+    history: createWebHashHistory(),
     routes: [
         {
             path: '/dataStatistics',
@@ -58,6 +58,11 @@ const router = createRouter({
             name: 'rtLog',
             component: () => import('../views/Log/RtLog.vue')
         },
+        {
+            path: '/wideTable',
+            name: 'wideTable',
+            component: () => import('../views/Log/WideTable.vue')
+        }
     ]
 })
 

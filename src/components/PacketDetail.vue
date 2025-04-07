@@ -2,13 +2,13 @@
     <el-drawer
         :model-value="modelValue"
         @update:model-value="$emit('update:modelValue', $event)"
-        title="报文详情"
+        :title="title"
         direction="rtl"
         size="50%"
     >
         <div v-if="itemData" class="drawer-content">
             <!-- 原始数据展示 -->
-            <el-card class="raw-data-card">
+            <el-card v-if="hasRawData" class="raw-data-card">
                 <template #header>
                     <div class="card-header">
                         <span>原始数据 (rawData)</span>
@@ -24,19 +24,21 @@
                         <span>消息详情 (messageDetail)</span>
                     </div>
                 </template>
-                <pre v-if="itemData.messageDetail">
-          {{ JSON.stringify(itemData.messageDetail, null, 2) }}
-        </pre>
+                <pre v-if="itemData">
+                    {{ JSON.stringify(hasRawData ? itemData.messageDetail : itemData, null, 2) }}
+                </pre>
             </el-card>
         </div>
         <div v-else class="empty-state">
-            <el-empty description="未选择数据" />
+            <el-empty description="数据加载中..." />
         </div>
     </el-drawer>
 </template>
 
 <script setup>
-defineProps({
+import {computed} from "vue";
+
+const props = defineProps({
     modelValue: {
         type: Boolean,
         required: true
@@ -44,7 +46,15 @@ defineProps({
     itemData: {
         type: Object,
         default: null
+    },
+    hasRawData: {
+        type: Boolean,
+        default: false
     }
+});
+
+const title = computed(() => {
+    return props.hasRawData ? '报文详情' : '日志详情';
 });
 
 defineEmits(['update:modelValue']);

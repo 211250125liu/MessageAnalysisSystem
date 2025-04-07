@@ -62,3 +62,21 @@ export function getAllRtLog(page,size){
         }
     })
 }
+
+export function searchWithConditions(size,cat,factoryName,proto,page,startTime,endTime){
+    return requestForLog.get('logs/searchWithConditions',{
+        params: {
+            size : size,
+            cat : cat,
+            factoryName : factoryName,
+            proto : proto,
+            page : page,
+            startTime: startTime,
+            endTime : endTime
+        }
+    })
+}
+
+export function getLogDetail(id){
+    return requestForLog.get('logs/detail/' + id)
+}

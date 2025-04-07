@@ -55,8 +55,8 @@
             </el-select>
         </el-col>
         <el-col :span="5" class="mt-4">
-            <el-button type="primary" @click="getData">筛选</el-button>
-            <el-button @click="resetFilter">重置筛选</el-button>
+            <el-button type="primary" @click="getData" :loading="loading">查询</el-button>
+            <el-button @click="resetFilter">重置条件</el-button>
         </el-col>
     </el-row>
 
@@ -78,8 +78,6 @@
         v-model:page-size="pageSize"
         :page-sizes="[10, 20, 30, 40]"
         size="default"
-        :disabled="disabled"
-        :background="background"
         layout="->,total, sizes, prev, pager, next, jumper "
         :total="total"
         @size-change="getData"
@@ -87,8 +85,9 @@
     />
 
     <PacketDetail
-        v-model:modelValue="drawerVisible"
+        v-model="drawerVisible"
         :item-data="currentRawItem"
+        :has-raw-data="true"
     />
 </template>
 
@@ -99,13 +98,8 @@ import PacketDetail from "../../components/PacketDetail.vue";
 
 const currentPage = ref(1)
 const pageSize = ref(20)
-const background = ref(false)
-const disabled = ref(false)
 const total = ref(0)
 const list = ref<any[]>([])
-const showData = ref(false)
-const rawData = ref<string>("")
-const rawAsciiData = ref("")
 
 // rawData转换
 /*const handleRowClick = (row: any) => {
@@ -177,13 +171,16 @@ onBeforeMount(()=>{
     getData()
 })
 
+const loading = ref(false)
 const getData = async () =>{
+    loading.value = true
     let startTime = "",endTime = ""
     if(filters.value.timeRange){
         startTime = filters.value.timeRange[0]
         endTime = filters.value.timeRange[1]
     }
     let data = await getMessageByConditions(filters.value.sourceIp,filters.value.destIp, filters.value.sourceMac,filters.value.destMac, filters.value.protocol, startTime,endTime,currentPage.value,pageSize.value) as any
+    loading.value = false
     total.value = data.total
     list.value = data.list
 }
