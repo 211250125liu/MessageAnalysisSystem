@@ -64,13 +64,12 @@
 
     <el-table :data="list" stripe style="width: 100%"
               @row-click="handleRowClick" >
-        <el-table-column prop="id" label="id" width="80" />
         <el-table-column prop="cat" label="cat" width="100" />
         <el-table-column prop="catId" label="catId" width="100" />
         <el-table-column prop="factoryName" label="factoryName" width="110" />
         <el-table-column prop="timestamp" label="timestamp" width="180" />
         <el-table-column prop="host" label="host" width="150" />
-        <el-table-column prop="proto" label="proto" width="70" />
+        <el-table-column prop="proto" label="proto" width="100" />
         <el-table-column prop="src" label="src" width="180" />
         <el-table-column prop="dst" label="dst" width="180" />
         <el-table-column prop="dpt" label="dpt" width="80" />
