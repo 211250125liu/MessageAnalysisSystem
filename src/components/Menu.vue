@@ -34,11 +34,27 @@
                 <el-icon><BellFilled /></el-icon>
                 <span>日志</span>
             </template>
+            <el-menu-item index="/logStatistics">
+                <el-icon><DataBoard /></el-icon>
+                <span>数据统计</span>
+            </el-menu-item>
+            <el-menu-item index="/logFlowAnalysis">
+                <el-icon><DataAnalysis /></el-icon>
+                <span>流量分析</span>
+            </el-menu-item>
+        </el-sub-menu>
+
+        <el-sub-menu index="3">
+            <template #title>
+                <el-icon><ScaleToOriginal /></el-icon>
+                <span>日志集成</span>
+            </template>
             <el-menu-item index="/wideTable">
                 <el-icon><Guide /></el-icon>
                 <span>宽表</span>
             </el-menu-item>
         </el-sub-menu>
+
     </el-menu>
 </template>
 
@@ -46,8 +62,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import {
-    BellFilled, DataAnalysis, DataBoard, Files,
-    Guide, Message, Search, TrendCharts
+    BellFilled, DataAnalysis, DataBoard, Guide, Message, ScaleToOriginal, Search, TrendCharts
 } from "@element-plus/icons-vue"
 
 const route = useRoute()

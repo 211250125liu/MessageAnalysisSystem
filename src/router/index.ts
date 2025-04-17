@@ -61,8 +61,18 @@ const router = createRouter({
         {
             path: '/wideTable',
             name: 'wideTable',
-            component: () => import('../views/Log/WideTable.vue')
-        }
+            component: () => import('../views/LogIntegration/WideTable.vue')
+        },
+        {
+            path: '/logStatistics',
+            name: '/logStatistics',
+            component: () => import('../views/Log/LogStatistics.vue')
+        },
+        {
+            path: '/logFlowAnalysis',
+            name: '/logFlowAnalysis',
+            component: () => import('../views/Log/LogFlowAnalysis.vue')
+        },
     ]
 })
 

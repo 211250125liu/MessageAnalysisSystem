@@ -80,3 +80,32 @@ export function searchWithConditions(size,cat,factoryName,proto,page,startTime,e
 export function getLogDetail(id){
     return requestForLog.get('logs/detail/' + id)
 }
+
+export function getLogStatistics(startTime,endTime){
+    return requestForLog.get('logs/statistics',{
+        params:{
+            startTime : startTime,
+            endTime: endTime
+        }
+    })
+}
+
+export function getTopSourceIp(startTime,endTime,topN){
+    return requestForLog.get('/logs/topSourceIPs',{
+        params:{
+            startTime : startTime,
+            endTime : endTime,
+            topN : topN
+        }
+    })
+}
+
+export function getTopDstIp(startTime,endTime,topN){
+    return requestForLog.get('/logs/topDestinationIPs',{
+        params:{
+            startTime : startTime,
+            endTime : endTime,
+            topN : topN
+        }
+    })
+}
