@@ -19,6 +19,11 @@ export default defineConfig({
   base: './',
   server:{
     proxy: {
+      '/api3' : {
+        target: 'http://172.29.7.168:36000', //本地的地址
+        changeOrigin: false, // 是否改变请求源地址
+        rewrite: (path) => path.replace(/^\/api3/, '')
+      },
       '/api2' : {
         target: 'http://172.29.7.168:35000', //本地的地址
         changeOrigin: false, // 是否改变请求源地址

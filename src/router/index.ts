@@ -23,41 +23,7 @@ const router = createRouter({
             name: 'flowChart',
             component: () => import('../views/Message/FlowChart.vue')
         },
-        {
-            path: '/fieldLog',
-            name: 'fieldLog',
-            component: () => import('../views/Log/FieldLog.vue')
-        },
-        {
-            path: '/filePathLog',
-            name: 'filePathLog',
-            component: () => import('../views/Log/FilePathLog.vue')
-        },
-        {
-            path: '/flowStartLog',
-            name: 'flowStartLog',
-            component: () => import('../views/Log/FlowStartLog.vue')
-        },
-        {
-            path: '/idLog',
-            name: 'idLog',
-            component: () => import('../views/Log/IdLog.vue')
-        },
-        {
-            path: '/productFamilyLog',
-            name: 'productFamilyLog',
-            component: () => import('../views/Log/ProductFamilyLog.vue')
-        },
-        {
-            path: '/rcodeNameLog',
-            name: 'rcodeNameLog',
-            component: () => import('../views/Log/RcodeNameLog.vue')
-        },
-        {
-            path: '/rtLog',
-            name: 'rtLog',
-            component: () => import('../views/Log/RtLog.vue')
-        },
+
         {
             path: '/wideTable',
             name: 'wideTable',
@@ -65,14 +31,45 @@ const router = createRouter({
         },
         {
             path: '/logStatistics',
-            name: '/logStatistics',
-            component: () => import('../views/Log/LogStatistics.vue')
+            name: 'logStatistics',
+            component: () => import('../views/LogIntegration/LogStatistics.vue')
         },
         {
             path: '/logFlowAnalysis',
-            name: '/logFlowAnalysis',
-            component: () => import('../views/Log/LogFlowAnalysis.vue')
+            name: 'logFlowAnalysis',
+            component: () => import('../views/LogIntegration/LogFlowAnalysis.vue')
         },
+        {
+            path : '/eventDataLog',
+            name : 'eventDataLog',
+            component : ()=> import('../views/OriginLog/EventDataLog.vue')
+        },
+        {
+            path : '/fieldsLog',
+            name : 'fieldsLog',
+            component: () => import('../views/OriginLog/FieldsLog.vue')
+        },
+        {
+            path : '/filePathLog',
+            component : ()=>import('../views/OriginLog/FilePathLog.vue')
+        },
+        {
+            path : '/flowStartLog',
+            component : ()=>import('../views/OriginLog/FlowStartLog.vue')
+        },
+        {
+            path : '/idLog',
+            component : ()=>import('../views/OriginLog/IdLog.vue')
+        },
+        {
+            path : '/productFamilyLog',
+            component : ()=>import('../views/OriginLog/ProductFamilyLog.vue')
+        },
+        {
+            path : '/rcodeNameLog',
+            component : ()=>import('../views/OriginLog/RcodeNameLog.vue')
+        },
+
     ]
 })
 

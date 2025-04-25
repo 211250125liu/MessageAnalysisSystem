@@ -34,6 +34,34 @@
                 <el-icon><BellFilled /></el-icon>
                 <span>日志</span>
             </template>
+            <el-menu-item index="/eventDataLog">
+                <el-icon><DataBoard /></el-icon>
+                <span>eventDataLog</span>
+            </el-menu-item>
+            <el-menu-item index="/fieldsLog">
+                <el-icon><OfficeBuilding /></el-icon>
+                <span>fieldsLog</span>
+            </el-menu-item>
+            <el-menu-item index="/filePathLog">
+                <el-icon><Expand /></el-icon>
+                <span>filePathLog</span>
+            </el-menu-item>
+            <el-menu-item index="/flowStartLog">
+                <el-icon><Flag /></el-icon>
+                <span>flowStartLog</span>
+            </el-menu-item>
+            <el-menu-item index="/idLog">
+                <el-icon><Grid /></el-icon>
+                <span>idLog</span>
+            </el-menu-item>
+            <el-menu-item index="/productFamilyLog">
+                <el-icon><PriceTag/></el-icon>
+                <span>productFamilyLog</span>
+            </el-menu-item>
+            <el-menu-item index="/rcodeNameLog">
+                <el-icon><ScaleToOriginal/></el-icon>
+                <span>rcodeNameLog</span>
+            </el-menu-item>
         </el-sub-menu>
 
         <el-sub-menu index="3">
@@ -62,7 +90,17 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import {
-    BellFilled, DataAnalysis, DataBoard, Guide, Message, ScaleToOriginal, Search, TrendCharts
+    BellFilled,
+    DataAnalysis,
+    DataBoard,
+    Expand,
+    Flag, Grid,
+    Guide,
+    Message,
+    OfficeBuilding, PriceTag,
+    ScaleToOriginal,
+    Search,
+    TrendCharts
 } from "@element-plus/icons-vue"
 
 const route = useRoute()
