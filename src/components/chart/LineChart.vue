@@ -27,6 +27,12 @@ const initChart = () => {
 
     const chart = echarts.init(chartRef.value)
     const option = {
+        grid: {
+            left: '3%',    // 左边距
+            right: '4%',   // 右边距
+            bottom: '15%', // 下边距（为X轴标签留空间）
+            containLabel: true // 确保坐标轴标签显示在grid内
+        },
         tooltip: {
             trigger: 'axis',
             formatter: '{b}<br/>消息数量: {c}'

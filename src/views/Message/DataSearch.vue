@@ -1,17 +1,18 @@
 <template>
     <el-row :gutter="20">
-        <el-col :span="3">
+        <el-col :span="2">
             <el-input
                 v-model="filters.sourceIp"
-                placeholder="源 IP"
+                placeholder="源IP"
                 prefix-icon="el-icon-search"
                 clearable
+
             />
         </el-col>
-        <el-col :span="3">
+        <el-col :span="2">
             <el-input
                 v-model="filters.destIp"
-                placeholder="目的 IP"
+                placeholder="目的IP"
                 prefix-icon="el-icon-search"
                 clearable
             />
@@ -19,7 +20,7 @@
         <el-col :span="3">
             <el-input
                 v-model="filters.sourceMac"
-                placeholder="源 MAC 地址"
+                placeholder="源MAC地址"
                 prefix-icon="el-icon-search"
                 clearable
             />
@@ -27,7 +28,7 @@
         <el-col :span="3">
             <el-input
                 v-model="filters.destMac"
-                placeholder="目的 MAC 地址"
+                placeholder="目的MAC地址"
                 prefix-icon="el-icon-search"
                 clearable
             />
@@ -36,17 +37,16 @@
             <el-date-picker
                 v-model="filters.timeRange"
                 type="datetimerange"
-                range-separator="至"
                 start-placeholder="开始时间"
                 end-placeholder="结束时间"
                 value-format="YYYY-MM-DD HH:mm:ss"
                 style="width: 100%"
             />
         </el-col>
-        <el-col :span="3">
+        <el-col :span="2">
             <el-select
                 v-model="filters.protocol"
-                placeholder="选择协议类型"
+                placeholder="协议"
                 clearable
                 style="width: 100%"
             >
@@ -54,14 +54,25 @@
                 <el-option label="UDP" value="UDP" />
             </el-select>
         </el-col>
-        <el-col :span="5" class="mt-4">
-            <el-button type="primary" @click="getData" :loading="loading">查询</el-button>
-            <el-button @click="resetFilter">重置条件</el-button>
+        <el-col :span="4">
+            <el-select
+                v-model="filters.onlyAnomaly"
+                placeholder="是否仅展示异常报文"
+                clearable
+                style="width: 100%"
+            >
+                <el-option label="仅异常报文" value='true' />
+                <el-option label="所有报文" value="false" />
+            </el-select>
         </el-col>
+        <el-col :span="4" class="mt-4">
+            <el-button type="primary" @click="getData" :loading="loading">查询</el-button>
+            <el-button @click="resetFilter">重置</el-button>
+        </el-col>
+
     </el-row>
 
-    <el-table :data="formattedData" stripe style="width: 100%"
-              @row-click="handleRowClick" >
+    <el-table :data="formattedData" stripe style="width: 100%">
         <el-table-column prop="No" label="No" width="80" />
         <el-table-column prop="time" label="Time" width="230" />
         <el-table-column prop="srcIp" label="SrcIp" width="130" />
@@ -71,6 +82,21 @@
         <el-table-column prop="protocol" label="Protocol" width="90" />
         <el-table-column prop="length" label="Length" width="80" />
         <el-table-column prop="information" label="Info" width="320" />
+        <el-table-column fixed="right" label="操作" width="120">
+            <template #default="{ row }">
+                <el-button link type="primary" size="small" @click="handleRowClick(row)">
+                    详情
+                </el-button>
+                <el-button
+                    link
+                    type="warning"
+                    size="small"
+                    @click="showAnomalyInfo(row.No)"
+                >
+                异常信息
+                </el-button>
+            </template>
+        </el-table-column>
     </el-table>
     <el-pagination
         style="margin-top: 1rem"
@@ -78,7 +104,7 @@
         v-model:page-size="pageSize"
         :page-sizes="[10, 20, 30, 40]"
         size="default"
-        layout="->,total, sizes, prev, pager, next, jumper "
+        layout="<-,total, sizes, prev, pager, next, jumper "
         :total="total"
         @size-change="getData"
         @current-change="getData"
@@ -89,58 +115,71 @@
         :item-data="currentRawItem"
         :has-raw-data="true"
     />
+
+    <el-drawer
+        v-model="drawerVisible2"
+        title="报文异常信息"
+        direction="rtl"
+        size="30%"
+    >
+        <div v-if="anomalyData">
+            <el-descriptions :column="1" border>
+                <el-descriptions-item label="综合评分">
+                    <el-tag :type="getScoreTagType(anomalyData.score)">
+                        {{ anomalyData.score }}
+                    </el-tag>
+                </el-descriptions-item>
+                <el-descriptions-item label="异常摘要">
+                    {{ anomalyData.anomalyMsg }}
+                </el-descriptions-item>
+                <el-descriptions-item label="异常详情">
+                    <ul>
+                        <li v-for="(detail, index) in anomalyData.anomalyDetails" :key="index">
+                            {{ detail }}
+                        </li>
+                    </ul>
+                </el-descriptions-item>
+            </el-descriptions>
+        </div>
+        <div v-else>
+            加载中...
+        </div>
+    </el-drawer>
 </template>
 
 <script lang="ts" setup>
-import {computed, onBeforeMount, ref} from 'vue'
-import {getMessageByConditions} from "../../api/apiForMessage/messageApi.ts";
+import {computed, onBeforeMount, ref,} from 'vue'
+import {getAnomaly, getMessageByConditions} from "../../api/apiForMessage/messageApi.ts";
 import PacketDetail from "../../components/PacketDetail.vue";
+import {ElMessage}  from "element-plus";
+
+const drawerVisible2 = ref(false)
+interface anomaly{
+    score : number,
+    anomalyMsg : string,
+    anomalyDetails : object
+}
+const anomalyData = ref<anomaly>()
+const showAnomalyInfo = async (messageId : number) => {
+    try {
+        anomalyData.value = await getAnomaly(messageId) as any
+        drawerVisible2.value = true
+    } catch (error) {
+        ElMessage.error('获取异常信息失败')
+        console.error(error)
+    }
+}
+
+const getScoreTagType = (score : number) => {
+    if (score <= 60) return 'success'
+    if (score <= 80) return 'warning'
+    return 'danger'
+}
 
 const currentPage = ref(1)
 const pageSize = ref(20)
 const total = ref(0)
 const list = ref<any[]>([])
-
-// rawData转换
-/*const handleRowClick = (row: any) => {
-    for(let item of list.value){
-        if(row.messageId === (item as any).messageId){
-            rawData.value = (item as any).rawData
-            showData.value = true
-            break
-        }
-    }
-    //转换为可读字符串
-    const hexArray = rawData.value.match(/.{2}/g) || [];  // 每两个字符为一组，转为数组
-    // 将16进制码和对应的字符一起组合起来
-    const formattedHex = hexArray.map(hex => {
-        const code = parseInt(hex, 16);
-        // 如果字符是可打印字符，则返回对应字符；否则返回 "."
-        return (code >= 32 && code <= 126) ? String.fromCharCode(code) : '.';
-    });
-    // 每行 16 个字符, 每 8 个字符之间插入两个空格
-    const rows = [];
-    for (let i = 0; i < formattedHex.length; i += 16) {
-        const line = formattedHex.slice(i, i + 16);
-        const spacedLine = line.slice(0, 8).join(' ') + '  ' + line.slice(8).join(' '); // 每 8 个字符之间加两个空格
-        rows.push(spacedLine);
-    }
-    rawAsciiData.value = rows.join('\n') || '';
-    // 两个之间加一个空格
-    if (rawData.value) {
-        rawData.value = (rawData.value as string).match(/.{1,2}/g)?.join(' ') || '';
-    }
-    if(rawData.value) {
-        // 2. 每16个字符后添加两个空格
-        let chunks16: string[];
-        chunks16 = ((rawData.value! as string).match(/.{1,48}/g) as any).map((chunk : any) => {
-            // 在每16个字符之间添加两个空格
-            return chunk.slice(0, 23) + '  ' + chunk.slice(23);
-        }) || [];
-        // 3. 每32个字符后换行
-        rawData.value = chunks16.join('\n');
-    }
-}*/
 
 const filters = ref({
     sourceIp: '',
@@ -148,7 +187,8 @@ const filters = ref({
     sourceMac: '',
     destMac: '',
     timeRange: [],
-    protocol: ''
+    protocol: '',
+    onlyAnomaly : ''
 });
 
 // 数据格式化
@@ -179,7 +219,7 @@ const getData = async () =>{
         startTime = filters.value.timeRange[0]
         endTime = filters.value.timeRange[1]
     }
-    let data = await getMessageByConditions(filters.value.sourceIp,filters.value.destIp, filters.value.sourceMac,filters.value.destMac, filters.value.protocol, startTime,endTime,currentPage.value,pageSize.value) as any
+    let data = await getMessageByConditions(filters.value.sourceIp,filters.value.destIp, filters.value.sourceMac,filters.value.destMac, filters.value.protocol, startTime,endTime,currentPage.value,pageSize.value,filters.value.onlyAnomaly) as any
     loading.value = false
     total.value = data.total
     list.value = data.list
@@ -204,3 +244,17 @@ const handleRowClick = (row : any) => {
 };
 
 </script>
+
+<style scoped>
+:deep(.el-input__wrapper) {
+    padding-left: 0;
+}
+/* 调整 placeholder 和输入文本的左侧对齐 */
+:deep(.el-input__inner) {
+    text-indent: 0;
+}
+/* 可选：调整前缀图标的位置（如果存在） */
+:deep(.el-input__prefix) {
+    left: 5px;
+}
+</style>

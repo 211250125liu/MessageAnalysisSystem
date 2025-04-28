@@ -7,6 +7,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AnomalyChart: typeof import('./src/components/chart/AnomalyChart.vue')['default']
     AreaChart: typeof import('./src/components/chart/AreaChart.vue')['default']
     BarChart: typeof import('./src/components/chart/BarChart.vue')['default']
     ElAside: typeof import('element-plus/es')['ElAside']

@@ -37,7 +37,7 @@ export function getLogByMessageId(messageId : number){
 export function getMessageByConditions(
     srcIp : string, dstIp : string, srcMac : string,dstMac : string,
     protocol : string, startTime : string, endTime : string,
-    pageNum : number, pageSize : number){
+    pageNum : number, pageSize : number, onlyAnomaly : string){
     return request.get('/message/by-conditions',{
         params: {
             srcIp : srcIp,
@@ -48,7 +48,16 @@ export function getMessageByConditions(
             startTime : startTime,
             endTime : endTime,
             pageNum : pageNum,
-            pageSize : pageSize
+            pageSize : pageSize,
+            onlyAnomaly : onlyAnomaly
+        }
+    })
+}
+
+export function getAnomaly(messageId : number){
+    return request.get('/message/getAnomalyResultByMessageId',{
+        params: {
+            messageId : messageId
         }
     })
 }

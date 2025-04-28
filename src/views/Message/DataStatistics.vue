@@ -24,7 +24,7 @@
         </el-card>
 
         <el-row :gutter="20" class="chart-row">
-            <el-col :span="12">
+            <el-col :span="8">
                 <el-card class="chart-card">
                     <div class="chart-title">每小时消息数量变化</div>
                     <div class="chart-container">
@@ -36,7 +36,7 @@
                     </div>
                 </el-card>
             </el-col>
-            <el-col :span="12">
+            <el-col :span="8">
                 <el-card class="chart-card">
                     <div class="chart-title">网络流量变化 (字节)</div>
                     <div class="chart-container">
@@ -48,22 +48,35 @@
                     </div>
                 </el-card>
             </el-col>
+            <el-col :span="8">
+                <el-card class="chart-card">
+                    <div class="chart-title">异常数量变化</div>
+                    <div class="chart-container">
+                        <anomaly-chart
+                            v-if="showChart && anomalyChartData.length > 0"
+                            :chart-data="anomalyChartData"
+                        />
+                        <el-empty v-else :description="showChart ? '暂无数据' : '请点击查询按钮获取数据'" />
+                    </div>
+                </el-card>
+            </el-col>
         </el-row>
     </div>
 </template>
 
 <script setup lang="ts">
-import {ref, computed, onBeforeMount} from 'vue'
+import {ref, computed} from 'vue'
 import {getStatsHourly} from "../../api/apiForMessage/DataStatisticsApi.ts";
 import AreaChart from '../../components/chart/AreaChart.vue'
 import LineChart from '../../components/chart/LineChart.vue'
+import AnomalyChart from '../../components/chart/AnomalyChart.vue'
 import dayjs from 'dayjs'
 import { ElMessage } from 'element-plus'
 
 // 时间范围选择
 const timeRange = ref<[string,string]>([
-    dayjs('2024-01-15 10:00:00').format('YYYY-MM-DD HH:mm:ss'),
-    dayjs('2024-01-16 10:00:00').format('YYYY-MM-DD HH:mm:ss')
+    dayjs('2024-01-15 00:00:00').format('YYYY-MM-DD HH:mm:ss'),
+    dayjs('2024-01-15 24:00:00').format('YYYY-MM-DD HH:mm:ss')
 ]);
 
 // 图表数据
@@ -73,11 +86,24 @@ const showChart = ref(false) // 新增：控制是否显示图表
 
 // 禁用日期规则（最大选择1天）
 const disabledDate = (time: Date) => {
-    if (!timeRange.value) return false
-    const startTime = new Date(timeRange.value[0]).getTime()
-    const maxRange = 24 * 60 * 60 * 1000 // 24小时
-    return time.getTime() > startTime + maxRange
-}
+    // 1. 限制只能选择 2024-01-15
+    const startDate = new Date(2024, 0, 15); // 2024-01-15 00:00:00
+    const endDate = new Date(2024, 0, 16);   // 2024-01-16 00:00:00（不包含）
+
+    // 如果不在 2024-01-15 范围内，直接禁用
+    if (time.getTime() < startDate.getTime() || time.getTime() >= endDate.getTime()) {
+        return true;
+    }
+
+    // 2. 如果已选择开始时间，限制最大范围不超过 24 小时
+    if (timeRange.value && timeRange.value[0]) {
+        const startTime = new Date(timeRange.value[0]).getTime();
+        const maxRange = 24 * 60 * 60 * 1000; // 24 小时
+        return time.getTime() > startTime + maxRange;
+    }
+
+    return false;
+};
 
 // 处理日期变化
 const handleDateChange = (val: any[]) => {
@@ -137,6 +163,10 @@ const trafficChartData = computed(() => {
     return fillMissingHours(rawData.value, timeRange.value, 'totalBytes', 'traffic');
 })
 
+const anomalyChartData = computed(() => {
+    return fillMissingHours(rawData.value, timeRange.value, 'anomalyCount', 'anomaly');
+})
+
 interface HourDataItem {
     hourTime: string | Date;  // 原始数据中的时间字段
     [key: string]: any;      // 其他动态字段
@@ -177,7 +207,7 @@ function fillMissingHours(
             const hour = hourTime.getHours();
             dataMap[hour] = {
                 time: `${hour.toString().padStart(2, '0')}:00`,
-                [fieldName]: item[valueKey]
+                [fieldName]: item[valueKey] || 0  // 确保异常数量为0时也能显示
             };
         }
     });
@@ -234,5 +264,14 @@ function fillMissingHours(
 
 .chart-container {
     height: 400px;
+}
+.chart-row {
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.chart-card {
+    height: 100%;
+    margin-bottom: 20px;
 }
 </style>
