@@ -175,6 +175,7 @@ const drawChart = () => {
 onMounted(() => {
     initChart()
     window.addEventListener('resize', handleResize)
+    getData()
 })
 
 onBeforeUnmount(() => {

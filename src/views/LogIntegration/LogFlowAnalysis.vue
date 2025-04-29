@@ -282,6 +282,7 @@ const handleResize = () => {
 // 生命周期钩子
 onMounted(() => {
     window.addEventListener('resize', handleResize)
+    fetchData()
 })
 
 onBeforeUnmount(() => {

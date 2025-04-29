@@ -54,7 +54,7 @@ export function getMessageByConditions(
     })
 }
 
-export function getAnomaly(messageId : number){
+export function getAnomaly(messageId : number) {
     return request.get('/message/getAnomalyResultByMessageId',{
         params: {
             messageId : messageId

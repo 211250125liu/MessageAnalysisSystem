@@ -6,7 +6,6 @@
                 placeholder="源IP"
                 prefix-icon="el-icon-search"
                 clearable
-
             />
         </el-col>
         <el-col :span="2">
@@ -61,7 +60,7 @@
                 clearable
                 style="width: 100%"
             >
-                <el-option label="仅异常报文" value='true' />
+                <el-option label="仅异常报文" value="true" />
                 <el-option label="所有报文" value="false" />
             </el-select>
         </el-col>
@@ -69,7 +68,6 @@
             <el-button type="primary" @click="getData" :loading="loading">查询</el-button>
             <el-button @click="resetFilter">重置</el-button>
         </el-col>
-
     </el-row>
 
     <el-table :data="formattedData" stripe style="width: 100%">
@@ -93,7 +91,7 @@
                     size="small"
                     @click="showAnomalyInfo(row.No)"
                 >
-                异常信息
+                    异常信息
                 </el-button>
             </template>
         </el-table-column>
@@ -110,11 +108,67 @@
         @current-change="getData"
     />
 
-    <PacketDetail
-        v-model="drawerVisible"
-        :item-data="currentRawItem"
-        :has-raw-data="true"
-    />
+    <el-dialog v-model="dialogVisible" title="数据包详情" width="70%">
+        <el-descriptions :column="2" border>
+            <el-descriptions-item label="消息ID">{{ packetData.message?.messageId }}</el-descriptions-item>
+            <el-descriptions-item label="时间">{{ packetData.message?.time }}</el-descriptions-item>
+            <el-descriptions-item label="工厂名称">{{ packetData.message?.factoryName }}</el-descriptions-item>
+            <el-descriptions-item label="长度">{{ packetData.message?.length }}</el-descriptions-item>
+
+            <el-descriptions-item label="源IP">{{ packetData.message?.srcIp }}</el-descriptions-item>
+            <el-descriptions-item label="目标IP">{{ packetData.message?.dstIp }}</el-descriptions-item>
+            <el-descriptions-item label="源MAC">{{ packetData.message?.srcMac }}</el-descriptions-item>
+            <el-descriptions-item label="目标MAC">{{ packetData.message?.dstMac }}</el-descriptions-item>
+
+            <el-descriptions-item label="协议">
+                <el-tag :type="getProtocolTagType(packetData.message?.protocol)">
+                    {{ packetData.message?.protocol }}
+                </el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item label="端口信息">{{ packetData.information }}</el-descriptions-item>
+
+            <!-- VLAN 信息 -->
+            <el-descriptions-item label="VLAN ID">{{ packetData.messageDetail?.vlan?.id }}</el-descriptions-item>
+            <el-descriptions-item label="VLAN 类型">{{ packetData.messageDetail?.vlan?.type }}</el-descriptions-item>
+
+            <!-- IP 层信息 -->
+            <el-descriptions-item label="IP版本">{{ packetData.messageDetail?.ip?.version }}</el-descriptions-item>
+            <el-descriptions-item label="TTL">{{ packetData.messageDetail?.ip?.ttl }}</el-descriptions-item>
+            <el-descriptions-item label="IP头长度">{{ packetData.messageDetail?.ip?.hdrLen }}</el-descriptions-item>
+            <el-descriptions-item label="IP总长度">{{ packetData.messageDetail?.ip?.len }}</el-descriptions-item>
+
+            <!-- TCP 信息 -->
+            <template v-if="packetData.message?.protocol === 'TCP'">
+                <el-descriptions-item label="TCP源端口">{{ packetData.messageDetail?.tcp?.srcPort }}</el-descriptions-item>
+                <el-descriptions-item label="TCP目标端口">{{ packetData.messageDetail?.tcp?.dstPort }}</el-descriptions-item>
+                <el-descriptions-item label="序列号">{{ packetData.messageDetail?.tcp?.seq }}</el-descriptions-item>
+                <el-descriptions-item label="确认号">{{ packetData.messageDetail?.tcp?.ack }}</el-descriptions-item>
+                <el-descriptions-item label="TCP标志">
+                    <el-tag v-for="flag in parseTcpFlags(packetData.messageDetail?.tcp?.flags)"
+                            :key="flag" size="small" style="margin-right: 5px;">
+                        {{ flag }}
+                    </el-tag>
+                </el-descriptions-item>
+                <el-descriptions-item label="窗口大小">{{ packetData.messageDetail?.tcp?.windowSize }}</el-descriptions-item>
+            </template>
+
+            <!-- 原始数据 -->
+            <el-descriptions-item label="原始数据" :span="2">
+                <el-input
+                    type="textarea"
+                    :rows="3"
+                    readonly
+                    :model-value="packetData.rawData"
+                    style="width: 100%"
+                />
+            </el-descriptions-item>
+        </el-descriptions>
+
+        <template #footer>
+            <el-button @click="dialogVisible = false">关闭</el-button>
+            <el-button type="primary" @click="copyData">复制数据</el-button>
+        </template>
+    </el-dialog>
 
     <el-drawer
         v-model="drawerVisible2"
@@ -148,19 +202,19 @@
 </template>
 
 <script lang="ts" setup>
-import {computed, onBeforeMount, ref,} from 'vue'
-import {getAnomaly, getMessageByConditions} from "../../api/apiForMessage/messageApi.ts";
-import PacketDetail from "../../components/PacketDetail.vue";
+import { computed, onBeforeMount, ref } from 'vue'
+import { getAnomaly, getMessageByConditions } from "../../api/apiForMessage/messageApi.ts"
 import {ElMessage}  from "element-plus";
 
 const drawerVisible2 = ref(false)
-interface anomaly{
-    score : number,
-    anomalyMsg : string,
-    anomalyDetails : object
+interface Anomaly {
+    score: number,
+    anomalyMsg: string,
+    anomalyDetails: string[]
 }
-const anomalyData = ref<anomaly>()
-const showAnomalyInfo = async (messageId : number) => {
+const anomalyData = ref<Anomaly | null>(null)
+
+const showAnomalyInfo = async (messageId: number) => {
     try {
         anomalyData.value = await getAnomaly(messageId) as any
         drawerVisible2.value = true
@@ -170,7 +224,7 @@ const showAnomalyInfo = async (messageId : number) => {
     }
 }
 
-const getScoreTagType = (score : number) => {
+const getScoreTagType = (score: number) => {
     if (score <= 60) return 'success'
     if (score <= 80) return 'warning'
     return 'danger'
@@ -186,63 +240,120 @@ const filters = ref({
     destIp: '',
     sourceMac: '',
     destMac: '',
-    timeRange: [],
+    timeRange: [] as string[],
     protocol: '',
-    onlyAnomaly : ''
-});
+    onlyAnomaly: ''
+})
 
 // 数据格式化
 const formattedData = computed(() => {
-    return list.value.map((data : any) => ({
-        No: data.message.messageId, // 序号
-        time: data.message.time, // 提取 message.time
-        srcIp: data.message.srcIp, // 提取 message.srcIp
-        dstIp: data.message.dstIp, // 提取 message.dstIp
-        srcMAC: data.messageDetail.ethernet.src,
-        dstMAC: data.messageDetail.ethernet.dst,
-        protocol: data.message.protocol, // 提取 message.protocol
-        length: data.message.length, // 提取 message.length
-        information: data.information, // 提取 information
+    return list.value.map((data: any) => ({
+        No: data.message.messageId,
+        time: data.message.time,
+        srcIp: data.message.srcIp,
+        dstIp: data.message.dstIp,
+        srcMAC: data.messageDetail.ethernet?.src || '',
+        dstMAC: data.messageDetail.ethernet?.dst || '',
+        protocol: data.message.protocol,
+        length: data.message.length,
+        information: data.information,
         _raw: data
-    }));
-});
+    }))
+})
 
-onBeforeMount(()=>{
+onBeforeMount(() => {
     getData()
 })
 
 const loading = ref(false)
-const getData = async () =>{
+const getData = async () => {
     loading.value = true
-    let startTime = "",endTime = ""
-    if(filters.value.timeRange){
+    let startTime = "", endTime = ""
+    if (filters.value.timeRange && filters.value.timeRange.length === 2) {
         startTime = filters.value.timeRange[0]
         endTime = filters.value.timeRange[1]
     }
-    let data = await getMessageByConditions(filters.value.sourceIp,filters.value.destIp, filters.value.sourceMac,filters.value.destMac, filters.value.protocol, startTime,endTime,currentPage.value,pageSize.value,filters.value.onlyAnomaly) as any
-    loading.value = false
-    total.value = data.total
-    list.value = data.list
+    try {
+        const data = await getMessageByConditions(
+            filters.value.sourceIp,
+            filters.value.destIp,
+            filters.value.sourceMac,
+            filters.value.destMac,
+            filters.value.protocol,
+            startTime,
+            endTime,
+            currentPage.value,
+            pageSize.value,
+            filters.value.onlyAnomaly
+        ) as any
+        total.value = data.total
+        list.value = data.list
+    } catch (error) {
+        ElMessage.error('获取数据失败')
+        console.error(error)
+    } finally {
+        loading.value = false
+    }
 }
+
 // 重置筛选
 const resetFilter = () => {
-    filters.value.sourceIp = '';
-    filters.value.destIp = '';
-    filters.value.sourceMac = '';
-    filters.value.destMac = '';
-    filters.value.timeRange = []
-    filters.value.protocol = ''
-};
+    filters.value = {
+        sourceIp: '',
+        destIp: '',
+        sourceMac: '',
+        destMac: '',
+        timeRange: [],
+        protocol: '',
+        onlyAnomaly: ''
+    }
+    currentPage.value = 1
+    getData()
+}
 
-const drawerVisible = ref(false);
-const currentRawItem = ref(null); // 存储原始数据
+const dialogVisible = ref(false)
+const packetData = ref<any>({})
 
-// 点击行时触发
-const handleRowClick = (row : any) => {
-    currentRawItem.value = row._raw;
-    drawerVisible.value = true;
-};
+const handleRowClick = (row: any) => {
+    packetData.value = row._raw
+    dialogVisible.value = true
+}
 
+const getProtocolTagType = (protocol: string) => {
+    const map: Record<string, string> = {
+        'TCP': 'success',
+        'UDP': 'warning',
+        'ICMP': 'danger',
+        'HTTP': '',
+        'HTTPS': 'success'
+    }
+    return map[protocol] || 'info'
+}
+
+const parseTcpFlags = (flags: string) => {
+    if (!flags) return []
+
+    const flagMap: Record<string, string[]> = {
+        '0x0002': ['SYN'],
+        '0x0010': ['ACK'],
+        '0x0018': ['ACK', 'PSH'],
+        '0x0001': ['FIN'],
+        '0x0004': ['RST']
+    }
+
+    return flagMap[flags] || [flags]
+}
+
+const copyData = () => {
+    navigator.clipboard.writeText(JSON.stringify(packetData.value, null, 2))
+        .then(() => {
+            ElMessage.success('已复制到剪贴板')
+        })
+        .catch(err => {
+            console.error('复制失败:', err)
+            ElMessage.error('复制失败')
+        })
+}
 </script>
 
 <style scoped>
@@ -256,5 +367,9 @@ const handleRowClick = (row : any) => {
 /* 可选：调整前缀图标的位置（如果存在） */
 :deep(.el-input__prefix) {
     left: 5px;
+}
+
+.el-tag {
+    margin-right: 5px;
 }
 </style>

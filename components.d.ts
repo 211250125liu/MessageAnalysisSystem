@@ -44,7 +44,6 @@ declare module 'vue' {
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
     LineChart: typeof import('./src/components/chart/LineChart.vue')['default']
     Menu: typeof import('./src/components/Menu.vue')['default']
-    PacketDetail: typeof import('./src/components/PacketDetail.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }
