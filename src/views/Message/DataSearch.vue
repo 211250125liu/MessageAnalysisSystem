@@ -109,61 +109,59 @@
     />
 
     <el-dialog v-model="dialogVisible" title="数据包详情" width="70%">
-        <el-descriptions :column="2" border>
-            <el-descriptions-item label="消息ID">{{ packetData.message?.messageId }}</el-descriptions-item>
-            <el-descriptions-item label="时间">{{ packetData.message?.time }}</el-descriptions-item>
-            <el-descriptions-item label="工厂名称">{{ packetData.message?.factoryName }}</el-descriptions-item>
-            <el-descriptions-item label="长度">{{ packetData.message?.length }}</el-descriptions-item>
-
-            <el-descriptions-item label="源IP">{{ packetData.message?.srcIp }}</el-descriptions-item>
-            <el-descriptions-item label="目标IP">{{ packetData.message?.dstIp }}</el-descriptions-item>
-            <el-descriptions-item label="源MAC">{{ packetData.message?.srcMac }}</el-descriptions-item>
-            <el-descriptions-item label="目标MAC">{{ packetData.message?.dstMac }}</el-descriptions-item>
-
-            <el-descriptions-item label="协议">
-                <el-tag :type="getProtocolTagType(packetData.message?.protocol)">
-                    {{ packetData.message?.protocol }}
-                </el-tag>
-            </el-descriptions-item>
-            <el-descriptions-item label="端口信息">{{ packetData.information }}</el-descriptions-item>
-
-            <!-- VLAN 信息 -->
-            <el-descriptions-item label="VLAN ID">{{ packetData.messageDetail?.vlan?.id }}</el-descriptions-item>
-            <el-descriptions-item label="VLAN 类型">{{ packetData.messageDetail?.vlan?.type }}</el-descriptions-item>
-
-            <!-- IP 层信息 -->
-            <el-descriptions-item label="IP版本">{{ packetData.messageDetail?.ip?.version }}</el-descriptions-item>
-            <el-descriptions-item label="TTL">{{ packetData.messageDetail?.ip?.ttl }}</el-descriptions-item>
-            <el-descriptions-item label="IP头长度">{{ packetData.messageDetail?.ip?.hdrLen }}</el-descriptions-item>
-            <el-descriptions-item label="IP总长度">{{ packetData.messageDetail?.ip?.len }}</el-descriptions-item>
-
-            <!-- TCP 信息 -->
-            <template v-if="packetData.message?.protocol === 'TCP'">
-                <el-descriptions-item label="TCP源端口">{{ packetData.messageDetail?.tcp?.srcPort }}</el-descriptions-item>
-                <el-descriptions-item label="TCP目标端口">{{ packetData.messageDetail?.tcp?.dstPort }}</el-descriptions-item>
-                <el-descriptions-item label="序列号">{{ packetData.messageDetail?.tcp?.seq }}</el-descriptions-item>
-                <el-descriptions-item label="确认号">{{ packetData.messageDetail?.tcp?.ack }}</el-descriptions-item>
-                <el-descriptions-item label="TCP标志">
-                    <el-tag v-for="flag in parseTcpFlags(packetData.messageDetail?.tcp?.flags)"
-                            :key="flag" size="small" style="margin-right: 5px;">
-                        {{ flag }}
-                    </el-tag>
-                </el-descriptions-item>
-                <el-descriptions-item label="窗口大小">{{ packetData.messageDetail?.tcp?.windowSize }}</el-descriptions-item>
-            </template>
-
-            <!-- 原始数据 -->
-            <el-descriptions-item label="原始数据" :span="2">
-                <el-input
-                    type="textarea"
-                    :rows="3"
-                    readonly
-                    :model-value="packetData.rawData"
-                    style="width: 100%"
-                />
-            </el-descriptions-item>
-        </el-descriptions>
-
+        <el-tabs v-model="activeTab">
+            <el-tab-pane label="ethernet" name="ethernet">
+                <el-descriptions :column="2" border>
+                    <el-descriptions-item label="src">{{ packetData.messageDetail.ethernet?.src }}</el-descriptions-item>
+                    <el-descriptions-item label="dst">{{ packetData.messageDetail.ethernet?.dst }}</el-descriptions-item>
+                    <el-descriptions-item label="type">{{ packetData.messageDetail.ethernet?.type }}</el-descriptions-item>
+                </el-descriptions>
+            </el-tab-pane>
+            <el-tab-pane label="vlan" name="vlan">
+                <el-descriptions :column="2" border>
+                    <el-descriptions-item label="priority">{{ packetData.messageDetail.vlan?.priority }}</el-descriptions-item>
+                    <el-descriptions-item label="dei">{{ packetData.messageDetail.vlan?.dei }}</el-descriptions-item>
+                    <el-descriptions-item label="type">{{ packetData.messageDetail.vlan?.type }}</el-descriptions-item>
+                    <el-descriptions-item label="id">{{ packetData.messageDetail.vlan?.id }}</el-descriptions-item>
+                </el-descriptions>
+            </el-tab-pane>
+            <el-tab-pane label="ip" name="ip">
+                <el-descriptions :column="2" border>
+                    <el-descriptions-item label="version">{{ packetData.messageDetail.ip?.version }}</el-descriptions-item>
+                    <el-descriptions-item label="hdrLen">{{ packetData.messageDetail.ip?.hrdLen }}</el-descriptions-item>
+                    <el-descriptions-item label="len">{{ packetData.messageDetail.ip?.len }}</el-descriptions-item>
+                    <el-descriptions-item label="flags">{{ packetData.messageDetail.ip?.flags }}</el-descriptions-item>
+                    <el-descriptions-item label="ttl">{{ packetData.messageDetail.ip?.ttl }}</el-descriptions-item>
+                    <el-descriptions-item label="protocol">{{ packetData.messageDetail.ip?.protocol }}</el-descriptions-item>
+                    <el-descriptions-item label="checksum">{{ packetData.messageDetail.ip?.checksum }}</el-descriptions-item>
+                    <el-descriptions-item label="srcIp">{{ packetData.messageDetail.ip?.srcIp }}</el-descriptions-item>
+                    <el-descriptions-item label="dstIp">{{ packetData.messageDetail.ip?.dstIp }}</el-descriptions-item>
+                </el-descriptions>
+            </el-tab-pane>
+            <el-tab-pane label="udp" name="udp">
+                <el-descriptions :column="2" border>
+                    <el-descriptions-item label="checksum">{{ packetData.messageDetail.udp?.checksum}}</el-descriptions-item>
+                    <el-descriptions-item label="dstPort">{{ packetData.messageDetail.udp?.dstPort}}</el-descriptions-item>
+                    <el-descriptions-item label="length">{{ packetData.messageDetail.udp?.length}}</el-descriptions-item>
+                    <el-descriptions-item label="payload">{{ packetData.messageDetail.udp?.payload}}</el-descriptions-item>
+                    <el-descriptions-item label="srcPort">{{ packetData.messageDetail.udp?.srcPort}}</el-descriptions-item>
+                </el-descriptions>
+            </el-tab-pane>
+            <el-tab-pane label="tcp" name="tcp">
+                <el-descriptions :column="2" border>
+                    <el-descriptions-item label="srcPort">{{ packetData.messageDetail.tcp?.srcPort}}</el-descriptions-item>
+                    <el-descriptions-item label="dstPort">{{ packetData.messageDetail.tcp?.dstPort}}</el-descriptions-item>
+                    <el-descriptions-item label="seq">{{ packetData.messageDetail.tcp?.seq}}</el-descriptions-item>
+                    <el-descriptions-item label="ack">{{ packetData.messageDetail.tcp?.ack}}</el-descriptions-item>
+                    <el-descriptions-item label="hrdLen">{{ packetData.messageDetail.tcp?.hrdLen}}</el-descriptions-item>
+                    <el-descriptions-item label="flags">{{ packetData.messageDetail.tcp?.flags}}</el-descriptions-item>
+                    <el-descriptions-item label="windowSize">{{ packetData.messageDetail.tcp?.windowSize}}</el-descriptions-item>
+                    <el-descriptions-item label="checksum">{{ packetData.messageDetail.tcp?.checksum}}</el-descriptions-item>
+                    <el-descriptions-item label="urgentPointer">{{ packetData.messageDetail.tcp?.urgentPointer}}</el-descriptions-item>
+                    <el-descriptions-item label="options">{{ packetData.messageDetail.tcp?.options}}</el-descriptions-item>
+                </el-descriptions>
+            </el-tab-pane>
+        </el-tabs>
         <template #footer>
             <el-button @click="dialogVisible = false">关闭</el-button>
             <el-button type="primary" @click="copyData">复制数据</el-button>
@@ -286,6 +284,7 @@ const getData = async () => {
             pageSize.value,
             filters.value.onlyAnomaly
         ) as any
+        console.log(data)
         total.value = data.total
         list.value = data.list
     } catch (error) {
@@ -354,6 +353,7 @@ const copyData = () => {
             ElMessage.error('复制失败')
         })
 }
+const activeTab = ref("ethernet")
 </script>
 
 <style scoped>

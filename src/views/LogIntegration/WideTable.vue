@@ -102,49 +102,53 @@
         :close-on-click-modal="false"
     >
         <template v-if="currentRawItem">
-            <el-descriptions
-                title="基础信息"
-                :column="2"
-                border
-                size="small"
-            >
-                <el-descriptions-item label="cat">{{ currentRawItem.cat }}</el-descriptions-item>
-                <el-descriptions-item label="catId">{{ currentRawItem.catId }}</el-descriptions-item>
-                <el-descriptions-item label="factoryName">{{ currentRawItem.factoryName }}</el-descriptions-item>
-                <el-descriptions-item label="groupId">{{ currentRawItem.groupId }}</el-descriptions-item>
-                <el-descriptions-item label="timestamp">{{ currentRawItem.timestamp }}</el-descriptions-item>
-                <el-descriptions-item label="timestampAggr">{{ currentRawItem.timestampAggr }}</el-descriptions-item>
-                <el-descriptions-item label="src">{{ currentRawItem.src }}</el-descriptions-item>
-                <el-descriptions-item label="dst">{{ currentRawItem.dst }}</el-descriptions-item>
-                <el-descriptions-item label="spt">{{ currentRawItem.spt }}</el-descriptions-item>
-                <el-descriptions-item label="dpt">{{ currentRawItem.dpt }}</el-descriptions-item>
-                <el-descriptions-item label="smac">{{ currentRawItem.smac }}</el-descriptions-item>
-                <el-descriptions-item label="dmac">{{ currentRawItem.dmac }}</el-descriptions-item>
-                <el-descriptions-item label="proto">{{ currentRawItem.proto }}</el-descriptions-item>
-                <el-descriptions-item label="app">{{ currentRawItem.app }}</el-descriptions-item>
-                <el-descriptions-item label="host">{{ currentRawItem.host }}</el-descriptions-item>
-                <el-descriptions-item label="logfile">{{ currentRawItem.logfile }}</el-descriptions-item>
-                <el-descriptions-item label="lineId">{{ currentRawItem.lineId }}</el-descriptions-item>
-                <el-descriptions-item label="uidRaw">{{ currentRawItem.uidRaw }}</el-descriptions-item>
-            </el-descriptions>
-
-            <el-descriptions title="嵌套字段（已解析）" :column="1" border size="small" class="mt-4">
-                <el-descriptions-item label="log">
-                    <pre>{{ tryParseJson(currentRawItem.log) }}</pre>
-                </el-descriptions-item>
-                <el-descriptions-item label="fields">
-                    <pre>{{ tryParseJson(currentRawItem.fields) }}</pre>
-                </el-descriptions-item>
-                <el-descriptions-item label="prospector">
-                    <pre>{{ tryParseJson(currentRawItem.prospector) }}</pre>
-                </el-descriptions-item>
-                <el-descriptions-item label="input">
-                    <pre>{{ tryParseJson(currentRawItem.input) }}</pre>
-                </el-descriptions-item>
-                <el-descriptions-item label="tags">
-                    <pre>{{ tryParseJson(currentRawItem.tags) }}</pre>
-                </el-descriptions-item>
-            </el-descriptions>
+            <el-tabs v-model="activeTab">
+                <el-tab-pane label="基础信息" name="basic">
+                    <el-descriptions
+                        :column="2"
+                        border
+                        size="small"
+                    >
+                        <el-descriptions-item label="cat">{{ currentRawItem.cat }}</el-descriptions-item>
+                        <el-descriptions-item label="catId">{{ currentRawItem.catId }}</el-descriptions-item>
+                        <el-descriptions-item label="factoryName">{{ currentRawItem.factoryName }}</el-descriptions-item>
+                        <el-descriptions-item label="groupId">{{ currentRawItem.groupId }}</el-descriptions-item>
+                        <el-descriptions-item label="timestamp">{{ currentRawItem.timestamp }}</el-descriptions-item>
+                        <el-descriptions-item label="timestampAggr">{{ currentRawItem.timestampAggr }}</el-descriptions-item>
+                        <el-descriptions-item label="src">{{ currentRawItem.src }}</el-descriptions-item>
+                        <el-descriptions-item label="dst">{{ currentRawItem.dst }}</el-descriptions-item>
+                        <el-descriptions-item label="spt">{{ currentRawItem.spt }}</el-descriptions-item>
+                        <el-descriptions-item label="dpt">{{ currentRawItem.dpt }}</el-descriptions-item>
+                        <el-descriptions-item label="smac">{{ currentRawItem.smac }}</el-descriptions-item>
+                        <el-descriptions-item label="dmac">{{ currentRawItem.dmac }}</el-descriptions-item>
+                        <el-descriptions-item label="proto">{{ currentRawItem.proto }}</el-descriptions-item>
+                        <el-descriptions-item label="app">{{ currentRawItem.app }}</el-descriptions-item>
+                        <el-descriptions-item label="host">{{ currentRawItem.host }}</el-descriptions-item>
+                        <el-descriptions-item label="logfile">{{ currentRawItem.logfile }}</el-descriptions-item>
+                        <el-descriptions-item label="lineId">{{ currentRawItem.lineId }}</el-descriptions-item>
+                        <el-descriptions-item label="uidRaw">{{ currentRawItem.uidRaw }}</el-descriptions-item>
+                    </el-descriptions>
+                </el-tab-pane>
+                <el-tab-pane label="嵌套字段" name="nest">
+                    <el-descriptions :column="1" border size="small" class="mt-4">
+                        <el-descriptions-item label="log">
+                            <pre>{{ tryParseJson(currentRawItem.log) }}</pre>
+                        </el-descriptions-item>
+                        <el-descriptions-item label="fields">
+                            <pre>{{ tryParseJson(currentRawItem.fields) }}</pre>
+                        </el-descriptions-item>
+                        <el-descriptions-item label="prospector">
+                            <pre>{{ tryParseJson(currentRawItem.prospector) }}</pre>
+                        </el-descriptions-item>
+                        <el-descriptions-item label="input">
+                            <pre>{{ tryParseJson(currentRawItem.input) }}</pre>
+                        </el-descriptions-item>
+                        <el-descriptions-item label="tags">
+                            <pre>{{ tryParseJson(currentRawItem.tags) }}</pre>
+                        </el-descriptions-item>
+                    </el-descriptions>
+                </el-tab-pane>
+            </el-tabs>
         </template>
 
         <template #footer>
@@ -157,7 +161,6 @@
 <script setup>
 import {onBeforeMount, ref} from "vue";
 import {searchWithConditions,getLogDetail} from "../../api/apiForLog/logApi.js"
-import {ElMessage} from "element-plus";
 
 const filters = ref({
     cat: '',
@@ -247,6 +250,7 @@ const copyToClipboard = (value) => {
     })
 }
 
+const activeTab = ref("basic")
 </script>
 
 <style scoped>
