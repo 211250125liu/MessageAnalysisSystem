@@ -40,6 +40,7 @@
                 end-placeholder="结束时间"
                 value-format="YYYY-MM-DD HH:mm:ss"
                 style="width: 100%"
+                :disabled-date="disabledDate"
             />
         </el-col>
         <el-col :span="2">
@@ -128,7 +129,7 @@
             <el-tab-pane label="ip" name="ip">
                 <el-descriptions :column="2" border>
                     <el-descriptions-item label="version">{{ packetData.messageDetail.ip?.version }}</el-descriptions-item>
-                    <el-descriptions-item label="hdrLen">{{ packetData.messageDetail.ip?.hrdLen }}</el-descriptions-item>
+                    <el-descriptions-item label="hdrLen">{{ packetData.messageDetail.ip?.hdrLen }}</el-descriptions-item>
                     <el-descriptions-item label="len">{{ packetData.messageDetail.ip?.len }}</el-descriptions-item>
                     <el-descriptions-item label="flags">{{ packetData.messageDetail.ip?.flags }}</el-descriptions-item>
                     <el-descriptions-item label="ttl">{{ packetData.messageDetail.ip?.ttl }}</el-descriptions-item>
@@ -153,7 +154,7 @@
                     <el-descriptions-item label="dstPort">{{ packetData.messageDetail.tcp?.dstPort}}</el-descriptions-item>
                     <el-descriptions-item label="seq">{{ packetData.messageDetail.tcp?.seq}}</el-descriptions-item>
                     <el-descriptions-item label="ack">{{ packetData.messageDetail.tcp?.ack}}</el-descriptions-item>
-                    <el-descriptions-item label="hrdLen">{{ packetData.messageDetail.tcp?.hrdLen}}</el-descriptions-item>
+                    <el-descriptions-item label="hdrLen">{{ packetData.messageDetail.tcp?.hdrLen}}</el-descriptions-item>
                     <el-descriptions-item label="flags">{{ packetData.messageDetail.tcp?.flags}}</el-descriptions-item>
                     <el-descriptions-item label="windowSize">{{ packetData.messageDetail.tcp?.windowSize}}</el-descriptions-item>
                     <el-descriptions-item label="checksum">{{ packetData.messageDetail.tcp?.checksum}}</el-descriptions-item>
@@ -203,6 +204,7 @@
 import { computed, onBeforeMount, ref } from 'vue'
 import { getAnomaly, getMessageByConditions } from "../../api/apiForMessage/messageApi.ts"
 import {ElMessage}  from "element-plus";
+import dayjs from 'dayjs'
 
 const drawerVisible2 = ref(false)
 interface Anomaly {
@@ -238,10 +240,33 @@ const filters = ref({
     destIp: '',
     sourceMac: '',
     destMac: '',
-    timeRange: [] as string[],
+    timeRange: [
+        dayjs('2024-01-15 00:00:00').format('YYYY-MM-DD HH:mm:ss'),
+        dayjs('2024-01-15 24:00:00').format('YYYY-MM-DD HH:mm:ss')
+    ],
     protocol: '',
     onlyAnomaly: ''
 })
+
+const disabledDate = (time: Date) => {
+    // 1. 限制只能选择 2024-01-15
+    const startDate = new Date(2024, 0, 15); // 2024-01-15 00:00:00
+    const endDate = new Date(2024, 0, 20);   // 2024-01-16 00:00:00（不包含）
+
+    // 如果不在 2024-01-15 范围内，直接禁用
+    if (time.getTime() < startDate.getTime() || time.getTime() >= endDate.getTime()) {
+        return true;
+    }
+
+    // 2. 如果已选择开始时间，限制最大范围不超过 24 小时
+    if (filters.value.timeRange && filters.value.timeRange[0]) {
+        const startTime = new Date(filters.value.timeRange[0]).getTime();
+        const maxRange = 24 * 60 * 60 * 1000 * 5; // 24 * 5 小时
+        return time.getTime() > startTime + maxRange;
+    }
+
+    return false;
+};
 
 // 数据格式化
 const formattedData = computed(() => {

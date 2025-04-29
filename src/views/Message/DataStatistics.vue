@@ -88,7 +88,7 @@ const showChart = ref(false) // 新增：控制是否显示图表
 const disabledDate = (time: Date) => {
     // 1. 限制只能选择 2024-01-15
     const startDate = new Date(2024, 0, 15); // 2024-01-15 00:00:00
-    const endDate = new Date(2024, 0, 16);   // 2024-01-16 00:00:00（不包含）
+    const endDate = new Date(2024, 0, 20);   // 2024-01-20 00:00:00（不包含）
 
     // 如果不在 2024-01-15 范围内，直接禁用
     if (time.getTime() < startDate.getTime() || time.getTime() >= endDate.getTime()) {
@@ -98,7 +98,7 @@ const disabledDate = (time: Date) => {
     // 2. 如果已选择开始时间，限制最大范围不超过 24 小时
     if (timeRange.value && timeRange.value[0]) {
         const startTime = new Date(timeRange.value[0]).getTime();
-        const maxRange = 24 * 60 * 60 * 1000; // 24 小时
+        const maxRange = 24 * 60 * 60 * 1000 * 5; // 24 * 5 小时
         return time.getTime() > startTime + maxRange;
     }
 
