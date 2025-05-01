@@ -62,6 +62,14 @@
                 <el-icon><ScaleToOriginal/></el-icon>
                 <span>rcodeNameLog</span>
             </el-menu-item>
+            <el-menu-item index="/topNLogs">
+                <el-icon><DataBoard /></el-icon>
+                <span>topN日志</span>
+            </el-menu-item>
+            <el-menu-item index="/hourlyStatistics">
+                <el-icon><DataAnalysis /></el-icon>
+                <span>数据统计</span>
+            </el-menu-item>
         </el-sub-menu>
 
         <el-sub-menu index="3">

@@ -82,3 +82,23 @@ export function getRcodeName(page,size,startTime,endTime,proto){
         }
     })
 }
+
+export function getStatistics(startTime,endTime,logType){
+    return requestForOriginLog.get('/statistics/hourly',{
+        params:{
+            startTime : startTime,
+            endTime : endTime,
+            logType : logType
+        }
+    })
+}
+
+export function getTopLogs(startTime,endTime,topN){
+    return requestForOriginLog.get('/statistics/topLogs',{
+        params: {
+            startTime : startTime,
+            endTime : endTime,
+            topN : topN
+        }
+    })
+}

@@ -69,7 +69,14 @@ const router = createRouter({
             path : '/rcodeNameLog',
             component : ()=>import('../views/OriginLog/RcodeNameLog.vue')
         },
-
+        {
+            path: '/topNLogs',
+            component : () => import('../views/OriginLog/TopNLogs.vue')
+        },
+        {
+            path: '/hourlyStatistics',
+            component: () => import('../views/OriginLog/HourlyStatistics.vue')
+        }
     ]
 })
 
