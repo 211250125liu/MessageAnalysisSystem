@@ -29,6 +29,13 @@
         </el-row>
     </el-card>
     <el-card>
+        <el-link
+            type="primary"
+            :href="`http://172.29.7.168:65348/flow/exportImage/${type}/${ip}`"
+            download="image.png"
+        >
+            导出拓扑图
+        </el-link>
         <div ref="chartDom" style="height: 35rem;"></div>
     </el-card>
 </template>
@@ -37,10 +44,16 @@
 import { ref, onMounted, nextTick } from 'vue';
 import { getFlowBySource, getFlowByTarget } from "../../api/apiForMessage/flowApi.ts";
 import * as echarts from 'echarts';
+import {computed} from "vue";
 
 // 获取 ip 和是否是源节点
 const ip = ref('10.193.21.253');
 const isSource = ref(true);
+
+const type = computed(() => {
+    return isSource.value ? 'source' : 'target';
+});
+
 const options = [
     { value: true, label: '源Ip节点' },
     { value: false, label: '目标Ip节点' },

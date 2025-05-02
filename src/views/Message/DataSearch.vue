@@ -69,6 +69,17 @@
             <el-button type="primary" @click="getData" :loading="loading">查询</el-button>
             <el-button @click="resetFilter">重置</el-button>
         </el-col>
+        <el-col :span="4" class="mt-4">
+            <el-button>
+                <el-link
+                    type="primary"
+                    :href="`http://172.29.7.168:65348/message/export?` + query"
+                    download="data.json"
+                >
+                    导出json文件
+                </el-link>
+            </el-button>
+        </el-col>
     </el-row>
 
     <el-table :data="formattedData" stripe style="width: 100%">
@@ -165,7 +176,6 @@
         </el-tabs>
         <template #footer>
             <el-button @click="dialogVisible = false">关闭</el-button>
-            <el-button type="primary" @click="copyData">复制数据</el-button>
         </template>
     </el-dialog>
 
@@ -288,6 +298,18 @@ onBeforeMount(() => {
     getData()
 })
 
+const query = computed(() => {
+    let startTime = filters.value.timeRange[0]
+    let pageNum = currentPage.value
+    let onlyAnomaly = filters.value.onlyAnomaly
+    let size = pageSize.value
+    return `startTIme=${startTime}endTime=${filters.value.timeRange[1]}
+    &srcIp=${filters.value.sourceIp}&dstIp=${filters.value.destIp}&srcMac=${filters.value.sourceMac}&
+    dstMac=${filters.value.destMac}&protocol=${filters.value.protocol}&
+    onlyAnomaly=${onlyAnomaly}&pageNum=${pageNum}&
+    pageSize=${size}`
+});
+
 const loading = ref(false)
 const getData = async () => {
     loading.value = true
@@ -379,6 +401,7 @@ const copyData = () => {
         })
 }
 const activeTab = ref("ethernet")
+
 </script>
 
 <style scoped>

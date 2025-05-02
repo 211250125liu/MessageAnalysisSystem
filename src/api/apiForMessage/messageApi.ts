@@ -61,3 +61,31 @@ export function getAnomaly(messageId : number) {
         }
     })
 }
+
+export function exportMessage(
+    srcIp : string, dstIp : string, srcMac : string,dstMac : string,
+    protocol : string, startTime : string, endTime : string,
+    pageNum : number, pageSize : number, onlyAnomaly : string){
+    return request.get('/message/export',{
+        params: {
+            srcIp : srcIp,
+            dstIp : dstIp,
+            srcMac : srcMac,
+            dstMac : dstMac,
+            protocol : protocol,
+            startTime : startTime,
+            endTime : endTime,
+            pageNum : pageNum,
+            pageSize : pageSize,
+            onlyAnomaly : onlyAnomaly
+        }
+    })
+}
+
+export function exportSource(ip : string){
+    return request.get('/flow/exportImage/source/'+ip)
+}
+
+export function exportTarget(ip : string){
+    return request.get('/flow/exportImage/target/'+ip)
+}

@@ -38,10 +38,6 @@
                 <el-icon><DataBoard /></el-icon>
                 <span>eventDataLog</span>
             </el-menu-item>
-            <el-menu-item index="/fieldsLog">
-                <el-icon><OfficeBuilding /></el-icon>
-                <span>fieldsLog</span>
-            </el-menu-item>
             <el-menu-item index="/filePathLog">
                 <el-icon><Expand /></el-icon>
                 <span>filePathLog</span>
@@ -80,6 +76,10 @@
             <el-menu-item index="/wideTable">
                 <el-icon><Guide /></el-icon>
                 <span>宽表</span>
+            </el-menu-item>
+            <el-menu-item index="/fieldsLog">
+                <el-icon><OfficeBuilding /></el-icon>
+                <span>fieldsLog异常分析</span>
             </el-menu-item>
             <el-menu-item index="/logStatistics">
                 <el-icon><DataBoard /></el-icon>

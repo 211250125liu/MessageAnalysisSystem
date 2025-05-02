@@ -59,10 +59,18 @@
                 <el-table-column prop="factoryName" label="工厂名称" width="120" />
                 <el-table-column prop="computerName" label="计算机名" width="180" show-overflow-tooltip />
                 <el-table-column prop="msg" label="消息" show-overflow-tooltip />
-                <el-table-column fixed="right" label="操作" width="120">
+                <el-table-column fixed="right" label="操作" width="150">
                     <template #default="{ row }">
                         <el-button link type="primary" size="small" @click="handleDetail(row)">
                             详情
+                        </el-button>
+                        <el-button
+                            link
+                            type="warning"
+                            size="small"
+                            @click="showAnomalyInfo(row.id)"
+                        >
+                            异常信息
                         </el-button>
                     </template>
                 </el-table-column>
@@ -110,12 +118,37 @@
                 <el-button @click="dialogVisible = false">关闭</el-button>
             </template>
         </el-dialog>
+
+        <el-drawer
+            v-model="drawerVisible"
+            title="日志异常信息"
+            direction="rtl"
+            size="30%"
+        >
+            <div v-if="anomalyData">
+                <el-descriptions :column="1" border>
+                    <el-descriptions-item label="是否异常">
+                        {{ anomalyData.isAnomaly ? 'true' : false }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="异常详情">
+                        <ul>
+                            <li v-for="(detail, index) in anomalyData.reason" :key="index">
+                                {{ detail }}
+                            </li>
+                        </ul>
+                    </el-descriptions-item>
+                </el-descriptions>
+            </div>
+            <div v-else>
+                加载中...
+            </div>
+        </el-drawer>
     </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { getEventData } from '../../api/apiForOriginLog/originLogApi.js'
+import {getEventData, getEventDataAnomaly} from '../../api/apiForOriginLog/originLogApi.js'
 import { ElMessage } from 'element-plus'
 
 // 表格数据
@@ -221,6 +254,17 @@ const handleDetail = (row) => {
 onMounted(() => {
     fetchData()
 })
+
+const drawerVisible = ref(false)
+const anomalyData = ref(null)
+const showAnomalyInfo =  async (id) => {
+    try{
+        anomalyData.value = await getEventDataAnomaly(id)
+        drawerVisible.value = true
+    } catch (e){
+        console.log(e)
+    }
+}
 </script>
 
 <style scoped>

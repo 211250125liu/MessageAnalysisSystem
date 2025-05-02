@@ -102,3 +102,10 @@ export function getTopLogs(startTime,endTime,topN){
         }
     })
 }
+
+export function getEventDataAnomaly(id){
+    return requestForOriginLog.get('/anomaly/logs/detail/'+id)
+}
+export function getFieldsAnomaly(id){
+    return requestForOriginLog.get('/fieldsAnomaly/detail/'+id)
+}
