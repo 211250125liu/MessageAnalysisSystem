@@ -1,7 +1,7 @@
 <template>
     <el-card style="margin-top: 0">
         <el-row :gutter="20">
-            <el-col :span="5">
+            <el-col :span="5" style="width: 100%;">
                 <el-select
                     v-model="isSource"
                     placeholder="Select"
@@ -16,26 +16,28 @@
                     />
                 </el-select>
             </el-col>
-            <el-col :span="5">
+            <el-col :span="5" style="width: 100%;">
                 <el-input
                     v-model="ip"
                     placeholder="输入Ip地址"
                     clearable
                 />
             </el-col>
-            <el-col :span="6">
+            <el-col :span="5" style="width: 100%;">
                 <el-button type="primary" @click="search">查询</el-button>
+                <el-button >
+                    <el-link
+                        type="primary"
+                        :href="`http://172.29.7.168:65348/flow/exportImage/${type}/${ip}`"
+                        download="image.png"
+                    >
+                        导出拓扑图
+                    </el-link>
+                </el-button>
             </el-col>
         </el-row>
     </el-card>
     <el-card>
-        <el-link
-            type="primary"
-            :href="`http://172.29.7.168:65348/flow/exportImage/${type}/${ip}`"
-            download="image.png"
-        >
-            导出拓扑图
-        </el-link>
         <div ref="chartDom" style="height: 35rem;"></div>
     </el-card>
 </template>
