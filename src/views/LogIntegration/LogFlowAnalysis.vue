@@ -44,7 +44,6 @@
         <el-row :gutter="20" class="chart-row">
             <el-col :span="24">
                 <el-card class="chart-card">
-                    <div class="chart-title">消息数量 Top {{ topN }}</div>
                     <div class="chart-container">
                         <div v-show="showChart" ref="chartRef" style="width: 100%; height: 100%"></div>
                         <el-empty v-show="!showChart" :description="rawData.length ? '暂无数据' : '请点击查询按钮获取数据'" />
@@ -125,6 +124,18 @@ const updateChart = () => {
     const chartData = prepareChartData();
 
     const option = {
+        toolbox: {
+            feature: {
+                saveAsImage: {
+                    title: '保存图片', // 按钮文字
+                    type: 'png',      // 可选 png/jpeg
+                    pixelRatio: 2,     // 导出图片的分辨率倍数
+                    backgroundColor: '#fff', // 背景色
+                    excludeComponents: ['toolbox'], // 排除不导出的组件
+                    name: 'chart_image' // 下载文件名（默认为图表标题）
+                }
+            }
+        },
         title: {
             text: `IP流量统计 Top ${topN.value}`,
             left: 'center'

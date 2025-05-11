@@ -47,7 +47,7 @@ const router = createRouter({
         {
             path : '/fieldsLog',
             name : 'fieldsLog',
-            component: () => import('../views/OriginLog/FieldsLog.vue')
+            component: () => import('../views/LogIntegration/FieldsLog.vue')
         },
         {
             path : '/filePathLog',

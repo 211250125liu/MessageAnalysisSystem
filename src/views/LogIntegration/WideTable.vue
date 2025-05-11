@@ -58,7 +58,7 @@
         </el-col>
         <el-col :span="6" class="mt-4">
             <el-button type="primary" @click="getData" :loading="loading">查询</el-button>
-            <el-button @click="resetFilter">重置条件</el-button>
+            <el-button  @click="resetFilter">重置条件</el-button>
         </el-col>
     </el-row>
 
@@ -66,10 +66,22 @@
               @row-click="handleRowClick" >
         <el-table-column prop="cat" label="cat" width="100" />
         <el-table-column prop="catId" label="catId" width="100" />
-        <el-table-column prop="factoryName" label="factoryName" width="110" />
+        <el-table-column prop="factoryName" label="factoryName" width="110" >
+            <template #default="{ row }">
+                <el-tag :type="getFactoryType(row.factoryName)">
+                    {{ row.factoryName }}
+                </el-tag>
+            </template>
+        </el-table-column>
         <el-table-column prop="timestamp" label="timestamp" width="180" />
         <el-table-column prop="host" label="host" width="150" />
-        <el-table-column prop="proto" label="proto" width="100" />
+        <el-table-column prop="proto" label="proto" width="100">
+            <template #default="{ row }">
+                <el-tag v-if="row.proto" :type="getProtoType(row.proto)">
+                    {{ row.proto }}
+                </el-tag>
+            </template>
+        </el-table-column>
         <el-table-column prop="src" label="src" width="180" />
         <el-table-column prop="dst" label="dst" width="180" />
         <el-table-column prop="dpt" label="dpt" width="80" />
@@ -215,6 +227,7 @@ const getData = async () => {
     loading.value = false
     total.value = data.total
     list.value = data.list
+    console.log(list)
 }
 
 const resetFilter = () => {
@@ -251,6 +264,25 @@ const copyToClipboard = (value) => {
 }
 
 const activeTab = ref("basic")
+
+const getProtoType = (proto) =>{
+    switch (proto) {
+        case 'udp' : return 'info'
+        case 'tcp' : return 'success'
+        case 'icmp' : return 'warning'
+        case 'profinet' : return 'danger'
+        default : return ''
+    }
+}
+
+const getFactoryType = (factory) =>{
+    switch (factory) {
+        case 'SEAL' : return 'info'
+        case 'SSLS' : return 'success'
+        case 'SMVS' : return 'warning'
+    }
+}
+
 </script>
 
 <style scoped>

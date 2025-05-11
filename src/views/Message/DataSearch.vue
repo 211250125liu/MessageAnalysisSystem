@@ -97,26 +97,41 @@
             </template>
         </el-table-column>
     </el-table>
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem">
-        <el-pagination
-            v-model:current-page="currentPage"
-            v-model:page-size="pageSize"
-            :page-sizes="[10, 20, 30, 40]"
-            layout="total, sizes, prev, pager, next, jumper"
-            :total="total"
-            @size-change="getData"
-            @current-change="getData"
-        />
-        <el-button>
-            <el-link
-                type="primary"
-                :href="`http://172.29.7.168:65348/message/export?` + query"
-                download="data.json"
-            >
-                导出JSON文件
+<!--    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem">-->
+<!--        <el-pagination-->
+<!--            v-model:current-page="currentPage"-->
+<!--            v-model:page-size="pageSize"-->
+<!--            :page-sizes="[10, 20, 30, 40]"-->
+<!--            layout="total, sizes, prev, pager, next, jumper"-->
+<!--            :total="total"-->
+<!--            @size-change="getData"-->
+<!--            @current-change="getData"-->
+<!--        />-->
+<!--        <el-button>-->
+<!--            <el-link-->
+<!--                type="primary"-->
+<!--                :href="`http://172.29.7.168:65348/message/export?` + query"-->
+<!--                download="data.json"-->
+<!--            >-->
+<!--                导出JSON文件-->
+<!--            </el-link>-->
+<!--        </el-button>-->
+<!--    </div>-->
+    <div style="display: flex; justify-content: flex-start; align-items: center; margin-top: 1rem; gap: 40rem">
+        <el-pagination v-model:current-page="currentPage"
+                       v-model:page-size="pageSize"
+                       :page-sizes="[10, 20, 30, 40]"
+                       layout="total, sizes, prev, pager, next, jumper" :total="total"
+                       @size-change="getData"
+                       @current-change="getData" />
+            <el-button type="primary">
+                <el-link :href="`http://172.29.7.168:65348/message/export?` + query" download="data.json"
+                             style="color: white">
+                    导出本页查询数据
             </el-link>
         </el-button>
     </div>
+
 
     <el-dialog v-model="dialogVisible" title="数据包详情" width="70%">
         <el-tabs v-model="activeTab">

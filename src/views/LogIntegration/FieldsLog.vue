@@ -52,7 +52,7 @@
                 <el-table-column prop="eventId" label="事件ID" width="100" />
                 <el-table-column prop="dataSrcIP" label="源IP" width="150" />
                 <el-table-column prop="subjectHostName" label="主机名" width="150" />
-                <el-table-column prop="subjectUserName" label="用户" width="120" />
+                <el-table-column prop="subjectUserName" label="用户" width="130" />
                 <el-table-column prop="factoryName" label="工厂" width="120" />
                 <el-table-column prop="logfile" label="日志文件" width="120" />
                 <el-table-column prop="category" label="分类" width="200" show-overflow-tooltip />

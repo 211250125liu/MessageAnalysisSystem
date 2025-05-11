@@ -94,6 +94,18 @@ const drawChart = () => {
     const sortedCounts = sortedIndices.map(i => counts[i]);
 
     const option = {
+        toolbox: {
+            feature: {
+                saveAsImage: {
+                    title: '保存图片', // 按钮文字
+                    type: 'png',      // 可选 png/jpeg
+                    pixelRatio: 2,     // 导出图片的分辨率倍数
+                    backgroundColor: '#fff', // 背景色
+                    excludeComponents: ['toolbox'], // 排除不导出的组件
+                    name: 'chart_image' // 下载文件名（默认为图表标题）
+                }
+            }
+        },
         title: {
             text: '各类型日志数量统计',
             left: 'center',
